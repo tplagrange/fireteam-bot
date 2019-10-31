@@ -1,1 +1,1 @@
-web: bin/firetam-bot
+web: bin/fireteam-bot
