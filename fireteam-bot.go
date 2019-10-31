@@ -29,5 +29,6 @@ func main() {
     // Define routes
     router.GET("/", hello)
 
+    // Start Listening
     router.Run(":" + port)
 }
