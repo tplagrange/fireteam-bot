@@ -4,6 +4,10 @@ import (
     "fmt"
     "net/http"
     "os"
+    "os/signal"
+    "syscall"
+
+    "github.com/tplagrange/fireteam-bot/discord"
 
     "github.com/gin-gonic/gin"
 )
@@ -29,6 +33,16 @@ func main() {
     // Define routes
     router.GET("/", hello)
 
-    // Start Listening
-    router.Run(":" + port)
+    // Start Web Server Routine
+    go router.Run(":" + port)
+
+
+    // Start Discord Bot routine
+    go discord.Bot()
+
+    // Wait here until CTRL-C or other term signal is received.
+    fmt.Println("Server Started.")
+    sc := make(chan os.Signal, 1)
+    signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+    <-sc
 }
