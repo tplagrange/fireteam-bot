@@ -11,6 +11,7 @@ import (
     "github.com/go-resty/resty/v2"
 )
 
+// Use a resty http client to make queries to the backend
 var rc *resty.Client
 
 func Bot() {
@@ -30,9 +31,9 @@ func Bot() {
         fmt.Println("Error opening Discord session: ", err)
     }
 
-    // Start the REST client
+    // Instantiate the REST client
     rc = resty.New()
-    
+
     // Register messageCreate as a callback for the messageCreate events.
     d.AddHandler(messageCreate)
 
@@ -58,11 +59,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// check if the message is "-loadout"
 	if strings.HasPrefix(m.Content, "-loadout") {
 
+        user := m.Author.ID
+
         // Debug to acknowledge the message in discord
 		s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
+        // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 
-        s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
-
-
-	}
+        // make api call to backend, request loadout for discord user id
+        resp, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" + user)
+        if err != nil {
+            fmt.Println(err)
+        }
+        // resp contains loadout info
+        fmt.Println(resp)
+    }
 }

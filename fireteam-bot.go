@@ -31,7 +31,7 @@ func main() {
     router.Use(gin.Logger())
 
     // Define routes
-    router.GET("/", hello)
+    initRoutes(router)
 
     // Start Web Server Routine
     go router.Run(":" + port)

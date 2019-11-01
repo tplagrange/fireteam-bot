@@ -2,18 +2,19 @@ package bungie
 
 import (
     "os"
-
-    "github.com/go-resty/resty/v2"
 )
 
+authURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=30633&response_type=code"
+
 func AuthenticateUser(client *Client) {
+    // Add Bungie Token to Header
     setHeaders(client)
+    // Get Access Token for User
+    token =
+    // Set Access Token for User
+    client.SetAuthToken(token)
 }
 
 func setHeaders(client *Client) {
     client.SetHeader("X-API-KEY", os.Getenv("BUNGIE_TOKEN"))
 }
-
-Key: X-API-KEY
-Value: {paste your API key here}
-Description: Destiny
