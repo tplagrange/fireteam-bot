@@ -7,8 +7,11 @@ import (
     "os/signal"
     "syscall"
 
+    // Internal Libraries
+    "github.com/tplagrange/fireteam-bot/api"
     "github.com/tplagrange/fireteam-bot/discord"
 
+    // External Libraries
     "github.com/gin-gonic/gin"
 )
 
@@ -33,9 +36,11 @@ func main() {
     // Define routes
     initRoutes(router)
 
+    // Start mongoDB Client
+    go api.ConnectDB()
+
     // Start Web Server Routine
     go router.Run(":" + port)
-
 
     // Start Discord Bot routine
     go discord.Bot()
