@@ -8,7 +8,10 @@ import (
     "syscall"
 
     "github.com/bwmarrin/discordgo"
+    "github.com/go-resty/resty/v2"
 )
+
+var rc *resty.Client
 
 func Bot() {
     token := os.Getenv("BOT_TOKEN")
@@ -27,6 +30,9 @@ func Bot() {
         fmt.Println("Error opening Discord session: ", err)
     }
 
+    // Start the REST client
+    rc = resty.New()
+    
     // Register messageCreate as a callback for the messageCreate events.
     d.AddHandler(messageCreate)
 
@@ -52,13 +58,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// check if the message is "-loadout"
 	if strings.HasPrefix(m.Content, "-loadout") {
 
-		// Find the channel that the message came from.
-		_, err := s.State.Channel(m.ChannelID)
-		if err != nil {
-			// Could not find channel.
-			return
-		}
-
+        // Debug to acknowledge the message in discord
 		s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
+
+        s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
+
+
 	}
 }
