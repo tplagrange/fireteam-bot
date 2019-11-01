@@ -1,20 +1,16 @@
-package api
+package main
 
 import (
     "context"
     "fmt"
     "os"
 
-    "github.com/gin-gonic/gin"
-
     // "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB() {
-
-
+func connectClient() *mongo.Client {
     mongoURI := os.Getenv("MONGODB_URI")
     if mongoURI == "" {
         mongoURI = "mongodb://localhost:27017"
@@ -34,10 +30,6 @@ func ConnectDB() {
         fmt.Println(err)
     }
 
-    fmt.Println("Connected to MongoDB.")
-}
-
-func GetLoadout(c *gin.Context) {
-    fmt.Println("In the backend!")
-    // If the user does not have an associated bungie token, respond unauthorized
+    fmt.Println("Connected to MongoDB")
+    return client
 }

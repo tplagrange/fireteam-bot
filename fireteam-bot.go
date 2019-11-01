@@ -1,6 +1,7 @@
 package main
 
 import (
+    "context"
     "fmt"
     "net/http"
     "os"
@@ -8,12 +9,14 @@ import (
     "syscall"
 
     // Internal Libraries
-    "github.com/tplagrange/fireteam-bot/api"
     "github.com/tplagrange/fireteam-bot/discord"
 
     // External Libraries
     "github.com/gin-gonic/gin"
+    "go.mongodb.org/mongo-driver/mongo"
 )
+
+var db *mongo.Client
 
 func hello(c *gin.Context) {
     c.String(http.StatusOK, "Hello, world!")
@@ -33,11 +36,11 @@ func main() {
     // Define plugins
     router.Use(gin.Logger())
 
-    // Define routes
+    // Define routes from './routes.go'
     initRoutes(router)
 
     // Start mongoDB Client
-    go api.ConnectDB()
+    db = connectClient()
 
     // Start Web Server Routine
     go router.Run(":" + port)
@@ -50,4 +53,11 @@ func main() {
     sc := make(chan os.Signal, 1)
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
     <-sc
+
+    // Cleanly close down the Discord session.
+    err := db.Disconnect(context.TODO())
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println("Connection to MongoDB closed.")
 }
