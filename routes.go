@@ -7,5 +7,8 @@ import (
 func initRoutes(router *gin.Engine) {
     router.GET("/", hello)
 
+    router.GET("/api/bungie", bungieCallback)
+    router.GET("/api/bungie/auth/:payload", bungieAuth)
+
     router.GET("/api/loadout/:id", getLoadout)
 }

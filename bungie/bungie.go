@@ -6,7 +6,7 @@ import (
 
 authURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=30633&response_type=code"
 
-func AuthenticateUser(client *Client) {
+func AuthUser(client *Client) {
     // Add Bungie Token to Header
     setHeaders(client)
     // Get Access Token for User

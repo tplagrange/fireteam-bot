@@ -14,6 +14,7 @@ import (
     // External Libraries
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/mongo"
+    _ "github.com/joho/godotenv/autoload"
 )
 
 var db *mongo.Client
