@@ -66,7 +66,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 
         // make api call to backend, request loadout for discord user id
-        res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("APP_PORT") + "/api/loadout/" + user)
+        res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" + user)
         if err != nil {
             fmt.Println(err)
         }
@@ -79,7 +79,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
             // User must authenticate with bungie
             // Direct message the user with a registration link
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("APP_PORT") + "/api/bungie/auth/" + user)
+            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT") + "/api/bungie/auth/" + user)
         }
 
     }

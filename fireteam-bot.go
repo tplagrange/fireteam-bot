@@ -1,9 +1,12 @@
 package main
 
 import (
+    "context"
     "fmt"
     "net/http"
     "os"
+    "os/signal"
+    "syscall"
 
     // Internal Libraries
     "github.com/tplagrange/fireteam-bot/discord"
@@ -21,7 +24,7 @@ func hello(c *gin.Context) {
 }
 
 func main() {
-    port := os.Getenv("APP_PORT")
+    port := os.Getenv("PORT")
 
     if port == "" {
         fmt.Print("Using default port...")
@@ -46,5 +49,16 @@ func main() {
     // Start Discord Bot routine
     go discord.Bot()
 
+    // Wait here until CTRL-C or other term signal is received.
     fmt.Println("Server Started.")
+    sc := make(chan os.Signal, 1)
+    signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+    <-sc
+
+    // Cleanly close down the Discord session.
+    err := db.Disconnect(context.TODO())
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println("Connection to MongoDB closed.")
 }
