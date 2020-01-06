@@ -24,7 +24,7 @@ func hello(c *gin.Context) {
 }
 
 func main() {
-    port := os.Getenv("PORT")
+    port := os.Getenv("APP_PORT")
 
     if port == "" {
         fmt.Print("Using default port...")
