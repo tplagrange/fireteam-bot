@@ -12,7 +12,7 @@ import (
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
-    code := c.Param("code")
+    code := c.Query("code")
     fmt.Println(code)
 }
 
