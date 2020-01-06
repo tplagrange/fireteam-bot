@@ -79,7 +79,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
             // User must authenticate with bungie
             // Direct message the user with a registration link
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + ":" + os.Getenv("PORT") + "/api/bungie/auth/" + user)
+            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/" + user)
         }
 
     }
