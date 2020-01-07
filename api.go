@@ -65,7 +65,7 @@ func bungieCallback(c *gin.Context) {
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
     discordID := c.Param("id")
-    filter     := bson.D{{ "DiscordID", discordID}}
+    filter     := bson.D{{ "discordid", discordID}}
 
     bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
                      os.Getenv("CLIENT_ID") +
@@ -103,12 +103,10 @@ func getLoadout(c *gin.Context) {
         fmt.Println(err)
     }
 
-    fmt.Println(result)
-
     if result.DiscordID == "" {
         c.String(403, "User does not exist")
         return
     }
 
-    c.String(200, "Nice")
+    c.String(200, "Found user: " + result.DiscordID)
 }
