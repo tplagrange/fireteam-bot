@@ -94,7 +94,7 @@ func bungieAuth(c *gin.Context) {
 // Return a json object containing the guardian's loadout
 func getLoadout(c *gin.Context) {
     discordID  := c.Param("id")
-    filter     := bson.D{{ "DiscordID", discordID}}
+    filter     := bson.D{{ "discordid", discordID}}
     collection := db.Database(dbName).Collection("users")
 
     var result User
@@ -109,4 +109,6 @@ func getLoadout(c *gin.Context) {
         c.String(403, "User does not exist")
         return
     }
+
+    c.String(200, "Nice")
 }
