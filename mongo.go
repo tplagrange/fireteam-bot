@@ -16,6 +16,8 @@ func connectClient() *mongo.Client {
         mongoURI = "mongodb://localhost:27017"
     }
 
+    mongoURI = mongoURI + "?retryWrites=false"
+
     clientOptions := options.Client().ApplyURI(mongoURI)
 
     // Connect to MongoDB
