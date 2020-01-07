@@ -27,7 +27,7 @@ type TokenResponse struct {
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
     code := c.Query("code")
-    // state := c.Query("state")
+    state := c.Query("state")
 
     // Now use the code to receive an access token
     client := &http.Client{}
@@ -47,14 +47,18 @@ func bungieCallback(c *gin.Context) {
         if err != nil {
             fmt.Println(err)
         }
-
-        fmt.Println(tokenResponse)
-        fmt.Println("Access Token: " + tokenResponse.Access_token)
+        // Update database
+        collection := db.Database("bot").Collection("users")
+        newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
+        insertResult, err := collection.InsertOne(context.TODO(), newUser)
+        if err != nil {
+            fmt.Println(err)
+        } else {
+            fmt.Println(insertResult.InsertedID)
+        }
     } else {
         fmt.Println(resp.StatusCode)
     }
-    // Update database
-    // collection := db.Database("bot").Collection("users")
 }
 
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
@@ -84,7 +88,6 @@ func getLoadout(c *gin.Context) {
     }
     if result.DiscordID == "" {
         c.String(403, "User does not exist")
-    } else {
-        fmt.Println("Got a user!")
+        return
     }
 }
