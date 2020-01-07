@@ -3,6 +3,7 @@ package main
 import (
     "context"
     "fmt"
+    "io/ioutil"
     "os"
     "net/http"
     "net/url"
@@ -28,8 +29,16 @@ func bungieCallback(c *gin.Context) {
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
     resp, _ := client.Do(req)
 
-    fmt.Println(string(resp.Body))
+    defer resp.Body.Close()
 
+    if resp.StatusCode == http.StatusOK {
+        bodyBytes, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            fmt.Println(err)
+        }
+        bodyString := string(bodyBytes)
+        fmt.Println(bodyString)
+    }
     // Update database
     // collection := db.Database("bot").Collection("users")
 }
