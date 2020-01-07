@@ -13,6 +13,7 @@ import (
     "github.com/gin-gonic/gin"
     // "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TokenResponse struct {
@@ -41,6 +42,7 @@ func bungieCallback(c *gin.Context) {
 
     defer resp.Body.Close()
 
+    // If we got an access token back, store it in the database
     if resp.StatusCode == http.StatusOK {
         var tokenResponse TokenResponse
         err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
@@ -49,7 +51,8 @@ func bungieCallback(c *gin.Context) {
         }
         // Update database
         collection := db.Database(dbName).Collection("users")
-        newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
+        var emptyID primitive.ObjectID
+        newUser := User{emptyID, state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
         insertResult, err := collection.InsertOne(context.TODO(), newUser)
         if err != nil {
             fmt.Println(err)
@@ -96,6 +99,8 @@ func getLoadout(c *gin.Context) {
     if err != nil {
         fmt.Println(err)
     }
+
+    fmt.Println(result)
 
     if result.DiscordID == "" {
         c.String(403, "User does not exist")
