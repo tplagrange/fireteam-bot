@@ -64,6 +64,7 @@ func bungieCallback(c *gin.Context) {
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
     discordID := c.Param("id")
+    filter     := bson.D{{ "DiscordID", discordID}}
 
     bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
                      os.Getenv("CLIENT_ID") +
@@ -71,8 +72,17 @@ func bungieAuth(c *gin.Context) {
                      "&state=" + discordID
 
     // If db entry exists for discordID, delete
-
-    c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
+    var result User
+    collection := db.Database(dbName).Collection("users")
+    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    if err != nil {
+        fmt.Println(err)
+    }
+    if result.DiscordID != "" {
+        fmt.Println("User already exists")
+    } else {
+        c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
+    }
 }
 
 // Return a json object containing the guardian's loadout
@@ -86,6 +96,7 @@ func getLoadout(c *gin.Context) {
     if err != nil {
         fmt.Println(err)
     }
+
     if result.DiscordID == "" {
         c.String(403, "User does not exist")
         return
