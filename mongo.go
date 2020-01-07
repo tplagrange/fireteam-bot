@@ -32,6 +32,6 @@ func connectClient() *mongo.Client {
         fmt.Println(err)
     }
 
-    fmt.Println("Connected to MongoDB")
+    fmt.Println("Connected to db: " + mongoURI)
     return client
 }
