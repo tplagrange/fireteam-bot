@@ -31,14 +31,16 @@ func bungieCallback(c *gin.Context) {
 
     defer resp.Body.Close()
 
-    if resp.StatusCode == http.StatusOK {
+    fmt.Println(resp.StatusCode)
+
+    // if resp.StatusCode == http.StatusOK {
         bodyBytes, err := ioutil.ReadAll(resp.Body)
         if err != nil {
             fmt.Println(err)
         }
         bodyString := string(bodyBytes)
         fmt.Println(bodyString)
-    }
+    // }
     // Update database
     // collection := db.Database("bot").Collection("users")
 }
