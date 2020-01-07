@@ -2,6 +2,7 @@ package main
 
 import (
     "context"
+    "encoding/base64"
     "fmt"
     "io/ioutil"
     "os"
@@ -25,7 +26,7 @@ func bungieCallback(c *gin.Context) {
     data.Set("grant_type", "authorization_code")
     data.Set("code", code)
     req, _ := http.NewRequest("POST", "https://www.bungie.net/platform/app/oauth/token/", strings.NewReader(data.Encode()))
-    req.Header.Add("Authorization", "Basic " + os.Getenv("CLIENT_SECRET"))
+    req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET"))))
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
     resp, _ := client.Do(req)
 
