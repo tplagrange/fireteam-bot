@@ -42,14 +42,15 @@ func bungieCallback(c *gin.Context) {
 
     defer resp.Body.Close()
 
-    var tokenResponse TokenResponse
+    var tokenResponse []TokenResponse
     if resp.StatusCode == http.StatusOK {
         bodyBytes, err := ioutil.ReadAll(resp.Body)
         if err != nil {
             fmt.Println(err)
         }
         json.Unmarshal(bodyBytes, &tokenResponse)
-        fmt.Println("Access Token: " + tokenResponse.access_token)
+        fmt.Println(tokenResponse[0])
+        fmt.Println("Access Token: " + tokenResponse[0].access_token)
     } else {
         fmt.Println(resp.StatusCode)
     }
