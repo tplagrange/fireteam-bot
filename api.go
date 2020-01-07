@@ -13,7 +13,6 @@ import (
     "github.com/gin-gonic/gin"
     // "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
-    "go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TokenResponse struct {
@@ -51,8 +50,7 @@ func bungieCallback(c *gin.Context) {
         }
         // Update database
         collection := db.Database(dbName).Collection("users")
-        var emptyID primitive.ObjectID
-        newUser := User{emptyID, state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
+        newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
         insertResult, err := collection.InsertOne(context.TODO(), newUser)
         if err != nil {
             fmt.Println(err)
@@ -81,11 +79,16 @@ func bungieAuth(c *gin.Context) {
     if err != nil {
         fmt.Println(err)
     }
+
     if result.DiscordID != "" {
-        fmt.Println("User already exists")
-    } else {
-        c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
+        deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+        if err != nil {
+            fmt.Println(err)
+        }
+        fmt.Println(deleteResult)
     }
+
+    c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
 // Return a json object containing the guardian's loadout
