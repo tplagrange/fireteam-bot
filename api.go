@@ -58,8 +58,8 @@ func getLoadout(c *gin.Context) {
     err := collection.FindOne(context.TODO(), filter).Decode(&result)
     if err != nil {
         fmt.Println(err)
-        c.String(500, "Could not connect to db")
-    } else if result.DiscordID == "" {
+    }
+    if result.DiscordID == "" {
         c.String(403, "User does not exist")
     } else {
         fmt.Println("Got a user!")
