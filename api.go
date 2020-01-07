@@ -73,20 +73,13 @@ func bungieAuth(c *gin.Context) {
                      "&state=" + discordID
 
     // If db entry exists for discordID, delete
-    var result User
     collection := db.Database(dbName).Collection("users")
-    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    fmt.Println("Delete")
+    deleteResult, err := collection.DeleteOne(context.TODO(), filter)
     if err != nil {
         fmt.Println(err)
     }
-
-    if !(result.DiscordID == "") {
-        deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-        if err != nil {
-            fmt.Println(err)
-        }
-        fmt.Println(deleteResult)
-    }
+    fmt.Println(deleteResult)
 
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
