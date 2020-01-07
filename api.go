@@ -48,8 +48,19 @@ func bungieCallback(c *gin.Context) {
         if err != nil {
             fmt.Println(err)
         }
-        // Update database
+
         collection := db.Database(dbName).Collection("users")
+
+        // Delete any existing entries for this user
+        filter := bson.D{{ "discordid", state}}
+        deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+        if err != nil {
+            fmt.Println(err)
+        } else {
+            fmt.Println(deleteResult)
+        }
+
+        // Insert new user entry
         newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
         insertResult, err := collection.InsertOne(context.TODO(), newUser)
         if err != nil {
@@ -65,21 +76,11 @@ func bungieCallback(c *gin.Context) {
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
     discordID := c.Param("id")
-    filter    := bson.D{{ "discordid", discordID}}
 
     bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
                      os.Getenv("CLIENT_ID") +
                      "&response_type=code" +
                      "&state=" + discordID
-
-    // If db entry exists for discordID, delete
-    collection := db.Database(dbName).Collection("users")
-    fmt.Println("Delete")
-    deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fmt.Println(deleteResult)
 
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
