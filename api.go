@@ -13,15 +13,23 @@ import (
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
     code := c.Query("code")
-    fmt.Println(code)
+    state := c.Query("state")
+    fmt.Println("Code: " + code)
+    fmt.Println("State: " + state)
 }
 
 // Redirect the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
-    bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" + os.Getenv("CLIENT_ID") + "&response_type=code"
-    params := c.Param("payload")
-    fmt.Println(params)
-    fmt.Println(bungieAuthURL)
+    discordID := c.Param("id")
+
+    bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
+                     os.Getenv("CLIENT_ID") +
+                     "&response_type=code" +
+                     "&state=" + discordID
+
+    // See if there is an entry for this user in mongo
+    // If yes, update
+
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
