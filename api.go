@@ -3,6 +3,7 @@ package main
 import (
     "context"
     "encoding/base64"
+    "encoding/json"
     "fmt"
     "io/ioutil"
     "os"
@@ -14,6 +15,15 @@ import (
     // "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
 )
+
+type TokenResponse struct {
+    access_token    string
+    token_type      string
+    expires_in      int
+    refresh_token   string
+    refresh_expires_in  int
+    membership_id   string
+}
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
@@ -32,21 +42,22 @@ func bungieCallback(c *gin.Context) {
 
     defer resp.Body.Close()
 
-    fmt.Println(resp.StatusCode)
-
-    // if resp.StatusCode == http.StatusOK {
+    var tokenResponse TokenResponse
+    if resp.StatusCode == http.StatusOK {
         bodyBytes, err := ioutil.ReadAll(resp.Body)
         if err != nil {
             fmt.Println(err)
         }
-        bodyString := string(bodyBytes)
-        fmt.Println(bodyString)
-    // }
+        json.Unmarshal(bodyBytes, &tokenResponse)
+        fmt.Println("Access Token: " + tokenResponse.access_token)
+    } else {
+        fmt.Println(resp.StatusCode)
+    }
     // Update database
     // collection := db.Database("bot").Collection("users")
 }
 
-// Redirect the discord user to bungie's OAUTH 2.0 Mechanism
+// Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
     discordID := c.Param("id")
 
@@ -55,7 +66,7 @@ func bungieAuth(c *gin.Context) {
                      "&response_type=code" +
                      "&state=" + discordID
 
-    // If yes, delete
+    // If db entry exists for discordID, delete
 
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
