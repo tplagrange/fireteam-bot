@@ -48,7 +48,7 @@ func bungieCallback(c *gin.Context) {
             fmt.Println(err)
         }
         // Update database
-        collection := db.Database("heroku_pn4hw5hd").Collection("users")
+        collection := db.Database(dbName).Collection("users")
         newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
         insertResult, err := collection.InsertOne(context.TODO(), newUser)
         if err != nil {
@@ -79,7 +79,7 @@ func bungieAuth(c *gin.Context) {
 func getLoadout(c *gin.Context) {
     discordID  := c.Param("id")
     filter     := bson.D{{ "DiscordID", discordID}}
-    collection := db.Database("heroku_pn4hw5hd").Collection("users")
+    collection := db.Database(dbName).Collection("users")
 
     var result User
     err := collection.FindOne(context.TODO(), filter).Decode(&result)
