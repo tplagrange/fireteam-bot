@@ -16,12 +16,12 @@ import (
 )
 
 type TokenResponse struct {
-    access_token    string
-    token_type      string
-    expires_in      int
-    refresh_token   string
-    refresh_expires_in  int
-    membership_id   string
+    Access_token    string
+    Token_type      string
+    Expires_in      int
+    Refresh_token   string
+    Refresh_expires_in  int
+    Membership_id   string
 }
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
@@ -49,7 +49,7 @@ func bungieCallback(c *gin.Context) {
         }
 
         fmt.Println(tokenResponse)
-        fmt.Println("Access Token: " + tokenResponse.access_token)
+        fmt.Println("Access Token: " + tokenResponse.Access_token)
     } else {
         fmt.Println(resp.StatusCode)
     }
