@@ -28,7 +28,7 @@ func bungieCallback(c *gin.Context) {
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
     resp, _ := client.Do(req)
 
-    fmt.Println(resp.Body)
+    fmt.Println(string(resp.Body))
 
     // Update database
     // collection := db.Database("bot").Collection("users")
