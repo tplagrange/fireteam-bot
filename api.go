@@ -80,6 +80,8 @@ func bungieAuth(c *gin.Context) {
         fmt.Println(err)
     }
 
+    fmt.Println("Going for bungie auth")
+    fmt.Println(result.DiscordID)
     if result.DiscordID != "" {
         deleteResult, err := collection.DeleteOne(context.TODO(), filter)
         if err != nil {
