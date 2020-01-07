@@ -5,7 +5,6 @@ import (
     "encoding/base64"
     "encoding/json"
     "fmt"
-    "io/ioutil"
     "os"
     "net/http"
     "net/url"
@@ -42,15 +41,15 @@ func bungieCallback(c *gin.Context) {
 
     defer resp.Body.Close()
 
-    var tokenResponse []TokenResponse
     if resp.StatusCode == http.StatusOK {
-        bodyBytes, err := ioutil.ReadAll(resp.Body)
+        var tokenResponse TokenResponse
+        err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
         if err != nil {
             fmt.Println(err)
         }
-        json.Unmarshal(bodyBytes, &tokenResponse)
-        fmt.Println(tokenResponse[0])
-        fmt.Println("Access Token: " + tokenResponse[0].access_token)
+
+        fmt.Println(tokenResponse)
+        fmt.Println("Access Token: " + tokenResponse.access_token)
     } else {
         fmt.Println(resp.StatusCode)
     }
