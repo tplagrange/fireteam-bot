@@ -5,17 +5,33 @@ import (
     "fmt"
     "os"
     "net/http"
+    "net/url"
+    "strings"
 
     "github.com/gin-gonic/gin"
+    // "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
 )
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
     code := c.Query("code")
-    state := c.Query("state")
-    fmt.Println("Code: " + code)
-    fmt.Println("State: " + state)
+    // state := c.Query("state")
+
+    // Now use the code to receive an access token
+    client := &http.Client{}
+    data := url.Values{}
+    data.Set("grant_type", "authorization_code")
+    data.Set("code", code)
+    req, _ := http.NewRequest("POST", "https://www.bungie.net/platform/app/oauth/token/", strings.NewReader(data.Encode()))
+    req.Header.Add("Authorization", "Basic " + os.Getenv("CLIENT_SECRET"))
+    req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    resp, _ := client.Do(req)
+
+    fmt.Println(resp.Body)
+
+    // Update database
+    // collection := db.Database("bot").Collection("users")
 }
 
 // Redirect the discord user to bungie's OAUTH 2.0 Mechanism
@@ -27,8 +43,7 @@ func bungieAuth(c *gin.Context) {
                      "&response_type=code" +
                      "&state=" + discordID
 
-    // See if there is an entry for this user in mongo
-    // If yes, update
+    // If yes, delete
 
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
@@ -43,8 +58,10 @@ func getLoadout(c *gin.Context) {
     err := collection.FindOne(context.TODO(), filter).Decode(&result)
     if err != nil {
         fmt.Println(err)
-    }
-    if result.DiscordID == "" {
+        c.String(500, "Could not connect to db")
+    } else if result.DiscordID == "" {
         c.String(403, "User does not exist")
+    } else {
+        fmt.Println("Got a user!")
     }
 }
