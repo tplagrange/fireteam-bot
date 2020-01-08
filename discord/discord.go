@@ -12,6 +12,7 @@ import (
 )
 
 // Use a resty http client to make queries to the backend
+// TODO: Replace this with the built in http client
 var rc *resty.Client
 
 func Bot() {
@@ -71,7 +72,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             fmt.Println(err)
         }
 
-        if res.StatusCode() == 403 {
+        if res.StatusCode() == 401 {
             userChannel, err := s.UserChannelCreate(user)
             if err != nil {
                 fmt.Println(err)

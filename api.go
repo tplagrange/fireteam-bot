@@ -83,7 +83,7 @@ func bungieCallback(c *gin.Context) {
             }
 
             // Insert new user entry
-            newUser := User{state, destinyMemberships, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
+            newUser := User{state, destinyMemberships, "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
             insertResult, err := collection.InsertOne(context.TODO(), newUser)
             if err != nil {
                 fmt.Println(err)
@@ -113,6 +113,27 @@ func bungieAuth(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
+// Call this function before running any privileged calls
+func validate(id string) int {
+    collection := db.Database(dbName).Collection("users")
+    filter := bson.D{{ "discordid", id}}
+
+    // Check if the api retrieved a discord id
+    if (id == "") {
+        return 500
+    }
+
+    // Check if there is a db entry for the discord id
+    var result User
+    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    if err != nil {
+        fmt.Println(err)
+        return 401
+    }
+
+    return 200
+}
+
 // Return a json object containing the guardian's loadout
 func getLoadout(c *gin.Context) {
     discordID  := c.Param("id")
@@ -125,8 +146,8 @@ func getLoadout(c *gin.Context) {
         fmt.Println(err)
     }
 
-    if result.DiscordID == "" {
-        c.String(403, "User does not exist")
+    if (validate(discordID) != 200) {
+        c.String(401, "User must register")
         return
     }
 
