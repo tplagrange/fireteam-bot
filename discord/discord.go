@@ -12,6 +12,7 @@ import (
 )
 
 // Use a resty http client to make queries to the backend
+// TODO: Replace this with the built in http client
 var rc *resty.Client
 
 func Bot() {
@@ -37,7 +38,7 @@ func Bot() {
     // Register messageCreate as a callback for the messageCreate events.
     d.AddHandler(messageCreate)
 
-    // Wait here until CTRL-C or other term signal is received.
+    // Wait here until CTRL-C o other term signal is received.
     fmt.Println("Discord Bot Running.")
     sc := make(chan os.Signal, 1)
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -71,7 +72,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             fmt.Println(err)
         }
 
-        if res.StatusCode() == 403 {
+        if res.StatusCode() == 401 {
             userChannel, err := s.UserChannelCreate(user)
             if err != nil {
                 fmt.Println(err)
@@ -79,7 +80,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
             // User must authenticate with bungie
             // Direct message the user with a registration link
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://localhost:" + os.Getenv("PORT") + "/api/bungie/auth/" + user)
+            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/" + user)
         }
 
     }

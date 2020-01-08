@@ -1,8 +1,14 @@
 package main
 
+type Membership struct {
+    MembershipType  float64
+    MembershipID    string
+}
+
 type User struct {
-    DiscordID    string
-    BungieID     string
-    accessToken  string
-    refreshToken string
+    DiscordID         string
+    Membership        []Membership
+    ActiveMembership  string
+    AccessToken       string
+    RefreshToken      string
 }
