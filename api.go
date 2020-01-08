@@ -84,6 +84,7 @@ func bungieCallback(c *gin.Context) {
                 valuesMap := u.(map[string]interface{})
                 fmt.Println(valuesMap)
                 value, ok := valuesMap["membershipId"].(int)
+                fmt.Printf("%T\n", value)
                 if ok {
                     destinyMembershipIDs = append(destinyMembershipIDs, value)
                 } else {
