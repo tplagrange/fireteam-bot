@@ -72,24 +72,15 @@ func bungieCallback(c *gin.Context) {
 
             // Determine which Destiny membership IDs are associated with the Bungie account
             var accountResponse interface{}
-            fmt.Println(accountResponse)
             err = json.NewDecoder(resp.Body).Decode(&accountResponse)
             accountMap  := accountResponse.(map[string]interface{})
-            fmt.Println(accountMap)
             responseMap := accountMap["Response"].(map[string]interface{})
-            fmt.Println(responseMap)
             destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
-            fmt.Println(destinyMembershipsArray)
             for _, u := range destinyMembershipsArray {
                 valuesMap := u.(map[string]interface{})
-                fmt.Println(valuesMap)
-                value, ok := valuesMap["membershipId"].(int)
-                fmt.Printf("%T\n", value)
-                if ok {
-                    destinyMembershipIDs = append(destinyMembershipIDs, value)
-                } else {
-                    fmt.Println("membershipId could not be cast to an int")
-                }
+                value := valuesMap["membershipId"].(int)
+                destinyMembershipIDs = append(destinyMembershipIDs, value)
+
             }
 
             // Insert new user entry
