@@ -68,7 +68,7 @@ func bungieCallback(c *gin.Context) {
 
         // Assess GetBungieAccount Response Code
         if resp.StatusCode == http.StatusOK {
-            destinyMembershipIDs := make([]int, 1)
+            destinyMembershipIDs := make([]string, 1)
 
             // Determine which Destiny membership IDs are associated with the Bungie account
             var accountResponse interface{}
@@ -78,7 +78,7 @@ func bungieCallback(c *gin.Context) {
             destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
             for _, u := range destinyMembershipsArray {
                 valuesMap := u.(map[string]interface{})
-                value := valuesMap["membershipId"].(int)
+                value := valuesMap["membershipId"].(string)
                 destinyMembershipIDs = append(destinyMembershipIDs, value)
 
             }
