@@ -39,12 +39,13 @@ func bungieCallback(c *gin.Context) {
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
     resp, _ := client.Do(req)
 
-    defer resp.Body.Close()
-
-    // If we got an access token back, store it in the database
+    // Assess GetToken Response Code
     if resp.StatusCode == http.StatusOK {
         var tokenResponse TokenResponse
+        // This could potentialy be changed to use unmarshalling to save memory
         err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
+        // err := json.Unmarshal(resp.Body, &tokenResponse)
+        resp.Body.Close()
         if err != nil {
             fmt.Println(err)
         }
@@ -60,15 +61,46 @@ func bungieCallback(c *gin.Context) {
             fmt.Println(deleteResult)
         }
 
-        // Insert new user entry
-        newUser := User{state, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
-        insertResult, err := collection.InsertOne(context.TODO(), newUser)
-        if err != nil {
-            fmt.Println(err)
+        // Collect the available destiny membership id(s) as an array
+        req, _ = http.NewRequest("GET", "https://www.bungie.net/platform/User/GetBungieAccount/" + tokenResponse.Membership_id + "/254/", nil)
+        req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+        resp, _ = client.Do(req)
+
+        // Assess GetBungieAccount Response Code
+        if resp.StatusCode == http.StatusOK {
+            destinyMembershipIDs := make([]int, 1)
+
+            // Determine which Destiny membership IDs are associated with the Bungie account
+            var accountResponse interface{}
+            err = json.NewDecoder(resp.Body).Decode(&accountResponse)
+            accountMap  := accountResponse.(map[string]interface{})
+            responseMap := accountMap["Response"].(map[string]interface{})
+            destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
+            for _, u := range destinyMembershipsArray {
+                valuesMap := u.(map[string]interface{})
+                value, ok := valuesMap["membershipId"].(int)
+                if ok {
+                    destinyMembershipIDs = append(destinyMembershipIDs, value)
+                } else {
+                    fmt.Println("membershipId could not be cast to an int")
+                }
+            }
+
+            // Insert new user entry
+            newUser := User{state, destinyMembershipIDs, tokenResponse.Membership_id, tokenResponse.Access_token, tokenResponse.Refresh_token}
+            insertResult, err := collection.InsertOne(context.TODO(), newUser)
+            if err != nil {
+                fmt.Println(err)
+            } else {
+                fmt.Println(insertResult.InsertedID)
+            }
         } else {
-            fmt.Println(insertResult.InsertedID)
+            // Error in GetBungieAccount
+            fmt.Println(resp.StatusCode)
         }
+
     } else {
+        // Error in GetTokenResponse
         fmt.Println(resp.StatusCode)
     }
 }
