@@ -1,7 +1,7 @@
 package main
 
 type Membership struct {
-    MembershipType  int
+    MembershipType  float64
     MembershipID    string
 }
 

@@ -78,7 +78,7 @@ func bungieCallback(c *gin.Context) {
             destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
             for _, u := range destinyMembershipsArray {
                 valuesMap := u.(map[string]interface{})
-                tmpMembership := Membership{valuesMap["membershipType"].(int), valuesMap["membershipId"].(string)}
+                tmpMembership := Membership{valuesMap["membershipType"].(float64), valuesMap["membershipId"].(string)}
                 destinyMemberships = append(destinyMemberships, tmpMembership)
             }
 
