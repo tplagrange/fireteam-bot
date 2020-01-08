@@ -131,6 +131,11 @@ func validate(id string) int {
         return 401
     }
 
+    // Check if there is an active membership id
+    if (result.ActiveMembership == "-1") {
+        return 300
+    }
+
     return 200
 }
 
@@ -146,10 +151,14 @@ func getLoadout(c *gin.Context) {
         fmt.Println(err)
     }
 
-    if (validate(discordID) != 200) {
+    switch returnCode := validate(discordID); returnCode {
+    case 200:
+        c.String(200, "Found user: " + result.DiscordID)
+    case 300:
+        c.String(300, "Please select a membership ID to continue request")
+    case 401:
         c.String(401, "User must register")
-        return
+    default:
+        c.String(500, "Unexpected error")
     }
-
-    c.String(200, "Found user: " + result.DiscordID)
 }
