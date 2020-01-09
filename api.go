@@ -185,13 +185,13 @@ func getCurrentLoadout(c *gin.Context) {
         // TODO: Update Active Character
         //
         //
-
+        activeCharacter := setActiveCharacter(result)
 
         client := &http.Client{}
         reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
                   result.ActiveMembership +
                   "/Character/" +
-                  result.ActiveCharacter +
+                  activeCharacter +
                   "/?components=205"
         req, _ := http.NewRequest("GET", reqURL, nil)
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
@@ -258,6 +258,7 @@ func setActiveCharacter(user User) string {
         if (date.After(latestDate)) {
             activeCharacter = k
         }
+        fmt.Println(date)
     }
     fmt.Println("Active Character is: " + activeCharacter)
     // destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
