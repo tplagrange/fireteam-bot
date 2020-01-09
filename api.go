@@ -237,10 +237,12 @@ func setActiveCharacter(user User) string {
               "/?components=200"
     req, _ := http.NewRequest("GET", reqURL, nil)
     req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
-    resp, _ := client.Do(req)
-
+    resp, err := client.Do(req)
+    if ( err != nil) {
+        fmt.Println(err)
+    }
     // Parse response json for character ids
-    err := json.NewDecoder(resp.Body).Decode(&profileResponse)
+    err = json.NewDecoder(resp.Body).Decode(&profileResponse)
     if ( err != nil ) {
         fmt.Println(err)
     }
@@ -248,6 +250,7 @@ func setActiveCharacter(user User) string {
 
     // Get relevant json data
     responseJSON  := profileResponse.(map[string]interface{})
+    fmt.Println(responseJSON)
     responseMap   := responseJSON["Response"].(map[string]interface{})
     characterMap  := responseMap["characters"].(map[string]interface{})["data"].(map[string]interface{})
 
