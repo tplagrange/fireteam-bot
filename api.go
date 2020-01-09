@@ -51,10 +51,6 @@ func bungieCallback(c *gin.Context) {
             fmt.Println(err)
         }
 
-        fmt.Println("/////")
-        fmt.Println(tokenResponse)
-        fmt.Println("/////")
-
         collection := db.Database(dbName).Collection("users")
 
         // Delete any existing entries for this user
@@ -131,6 +127,8 @@ func bungieCallback(c *gin.Context) {
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
     discordID := c.Param("id")
+
+    fmt.Println(discordID)
 
     bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
                      os.Getenv("CLIENT_ID") +
