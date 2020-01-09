@@ -90,7 +90,7 @@ func bungieCallback(c *gin.Context) {
                 /// For now, we assume PC is the active membership
                 activeMembershipType := valuesMap["membershipType"].(float64)
                 if ( activeMembershipType == 3 ) {
-                    activeMembership = "3"
+                    activeMembership = valuesMap["membershipId"].(string)
                     fmt.Println( "Active Membership: " + valuesMap["displayName"].(string) )
                 }
                 // Replace with getActiveMembership() implementation
