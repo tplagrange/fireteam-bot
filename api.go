@@ -114,6 +114,7 @@ func bungieAuth(c *gin.Context) {
 }
 
 // Call this function before running any privileged calls
+// TODO: Include a check for active token that refreshes the token
 func validate(id string) int {
     collection := db.Database(dbName).Collection("users")
     filter := bson.D{{ "discordid", id}}
@@ -152,8 +153,30 @@ func getLoadout(c *gin.Context) {
     }
 
     switch returnCode := validate(discordID); returnCode {
+    // Success Condition
     case 200:
-        c.String(200, "Found user: " + result.DiscordID)
+        reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
+                  result.ActiveMembership +
+                  "/Character/" +
+                  result.ActiveCharacter +
+                  "/?components=205"
+        req, _ := http.NewRequest("GET", reqURL, strings.NewReader(data.Encode()))
+
+
+        req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET"))))
+        req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        resp, _ := client.Do(req)
+
+        // Assess GetToken Response Code
+        if resp.StatusCode == http.StatusOK {
+            var tokenResponse TokenResponse
+            // This could potentialy be changed to use unmarshalling to save memory
+            err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
+            // err := json.Unmarshal(resp.Body, &tokenResponse)
+            resp.Body.Close()
+            if err != nil {
+                fmt.Println(err)
+            }
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:
@@ -161,4 +184,10 @@ func getLoadout(c *gin.Context) {
     default:
         c.String(500, "Unexpected error")
     }
+}
+
+// Get the most recently played character
+// TODO: Implement for all calls to character
+func getActiveCharacter(user User) {
+    return
 }
