@@ -233,7 +233,7 @@ func setActiveCharacter(user User) string {
     // Make GET request to Profile endpoint
     client := &http.Client{}
     reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
-              user.ActiveMembership + "/" +
+              user.ActiveMembership +
               "/?components=200"
     req, _ := http.NewRequest("GET", reqURL, nil)
     req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
