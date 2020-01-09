@@ -135,6 +135,8 @@ func bungieAuth(c *gin.Context) {
                      "&response_type=code" +
                      "&state=" + discordID
 
+    fmt.Println(bungieAuthURL)
+
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
