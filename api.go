@@ -80,9 +80,26 @@ func bungieCallback(c *gin.Context) {
             accountMap  := accountResponse.(map[string]interface{})
             responseMap := accountMap["Response"].(map[string]interface{})
             destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
+
+            activeMembership := "-1"
             for _, u := range destinyMembershipsArray {
                 valuesMap := u.(map[string]interface{})
-                tmpMembership := Membership{valuesMap["membershipType"].(float64), valuesMap["membershipId"].(string)}
+
+
+                //////
+                ///
+                /// For now, we assume PC is the active membership
+                activeMembershipType := valuesMap["membershipType"].(float64)
+                if ( activeMembershipType == 3 ) {
+                    activeMembership = "3"
+                    fmt.Println( "Active Membership: " + valuesMap["displayName"].(string) )
+                }
+                // Replace with getActiveMembership() implementation
+                ///
+                //////
+
+
+                tmpMembership := Membership{activeMembershipType, valuesMap["membershipId"].(string)}
                 destinyMemberships = append(destinyMemberships, tmpMembership)
             }
 
@@ -90,7 +107,7 @@ func bungieCallback(c *gin.Context) {
             loadouts := make([]Loadout, 0)
 
             // Insert new user entry
-            newUser := User{loadouts, destinyMemberships, state, "-1", "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
+            newUser := User{loadouts, destinyMemberships, state, activeMembership, "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
             insertResult, err := collection.InsertOne(context.TODO(), newUser)
             if err != nil {
                 fmt.Println(err)
@@ -195,6 +212,7 @@ func getCurrentLoadout(c *gin.Context) {
 }
 
 func getActiveMembership() {
+    // maybe just grab the most recently active account?
     return
 }
 
