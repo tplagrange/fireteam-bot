@@ -9,6 +9,7 @@ import (
     "net/http"
     "net/url"
     "strings"
+    "time"
 
     "github.com/gin-gonic/gin"
     // "go.mongodb.org/mongo-driver/mongo"
@@ -77,6 +78,8 @@ func bungieCallback(c *gin.Context) {
             // Determine which Destiny membership IDs are associated with the Bungie account
             var accountResponse interface{}
             err = json.NewDecoder(resp.Body).Decode(&accountResponse)
+            resp.Body.Close()
+
             accountMap  := accountResponse.(map[string]interface{})
             responseMap := accountMap["Response"].(map[string]interface{})
             destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
@@ -103,8 +106,8 @@ func bungieCallback(c *gin.Context) {
                 destinyMemberships = append(destinyMemberships, tmpMembership)
             }
 
-            // Empty Loadouts
-            loadouts := make([]Loadout, 0)
+            // Empty User Values
+            loadouts   := make([]Loadout, 0)
 
             // Insert new user entry
             newUser := User{loadouts, destinyMemberships, state, activeMembership, "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
@@ -199,9 +202,9 @@ func getCurrentLoadout(c *gin.Context) {
         // TODO: Store Inventory Data for Character
         //
         //
-
-
         }
+        resp.Body.Close()
+
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:
@@ -216,9 +219,48 @@ func getActiveMembership() {
     return
 }
 
-// Get the most recently played character
+// Sets and returns the most recently played character id
 // TODO: Implement for all calls to character
-func getActiveCharacter(user User) string {
-    // if user has no active membership, must update
-    return "-1"
+func setActiveCharacter(user User) string {
+    var profileResponse interface{}
+
+    // If user has no active membership, must update
+    if (user.ActiveMembership == "-1") {
+        // getActiveMembership()
+        return "-1"
+    }
+
+    // Make GET request to Profile endpoint
+    client := &http.Client{}
+    reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
+              user.ActiveMembership + "/" +
+              "/?components=200"
+    req, _ := http.NewRequest("GET", reqURL, nil)
+    req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+    resp, _ := client.Do(req)
+
+    // Parse response json for character ids
+    _ = json.NewDecoder(resp.Body).Decode(&profileResponse)
+    resp.Body.Close()
+
+    // Get relevant json data
+    responseJSON  := profileResponse.(map[string]interface{})
+    responseMap   := responseJSON["Response"].(map[string]interface{})
+    characterMap  := responseMap["characters"].(map[string]interface{})["data"].(map[string]interface{})
+
+    activeCharacter := "-1"
+    latestDate := time.Time{} // The zero value of type Time is January 1, year 1, 00:00:00.000000000 UTC.
+    for k, v := range characterMap {
+        dateString := v.(map[string]interface{})["dateLastPlayed"].(string) // e.g. "2020-01-09T06:11:35Z"
+        date, _    := time.Parse(
+            time.RFC3339,
+            dateString)
+        if (date.After(latestDate)) {
+            activeCharacter = k
+        }
+    }
+    fmt.Println("Active Character is: " + activeCharacter)
+    // destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
+
+    return activeCharacter
 }
