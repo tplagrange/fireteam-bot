@@ -50,6 +50,10 @@ func bungieCallback(c *gin.Context) {
             fmt.Println(err)
         }
 
+        fmt.Println("/////")
+        fmt.Println(tokenResponse)
+        fmt.Println("/////")
+
         collection := db.Database(dbName).Collection("users")
 
         // Delete any existing entries for this user
@@ -82,7 +86,7 @@ func bungieCallback(c *gin.Context) {
                 destinyMemberships = append(destinyMemberships, tmpMembership)
             }
 
-            // TODO: Get the loadouts and fill the class
+            // Empty Loadouts
             loadouts := make([]Loadout, 0)
 
             // Insert new user entry
@@ -144,7 +148,7 @@ func validate(id string) int {
 }
 
 // Return a json object containing the guardian's loadout
-func getLoadout(c *gin.Context) {
+func getCurrentLoadout(c *gin.Context) {
     discordID  := c.Param("id")
     filter     := bson.D{{ "discordid", discordID}}
     collection := db.Database(dbName).Collection("users")
@@ -161,7 +165,7 @@ func getLoadout(c *gin.Context) {
         // TODO: Update Active Character
         //
         //
-        
+
 
         client := &http.Client{}
         reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
@@ -190,8 +194,13 @@ func getLoadout(c *gin.Context) {
     }
 }
 
+func getActiveMembership() {
+    return
+}
+
 // Get the most recently played character
 // TODO: Implement for all calls to character
-func getActiveCharacter(user User) {
-    return
+func getActiveCharacter(user User) string {
+    // if user has no active membership, must update
+    return "-1"
 }

@@ -10,5 +10,5 @@ func initRoutes(router *gin.Engine) {
     router.GET("/api/bungie/callback", bungieCallback)
     router.GET("/api/bungie/auth/:id", bungieAuth)
 
-    router.GET("/api/loadout/:id", getLoadout)
+    router.GET("/api/loadout/:id", getCurrentLoadout)
 }
