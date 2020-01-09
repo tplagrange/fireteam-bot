@@ -250,7 +250,6 @@ func setActiveCharacter(user User) string {
 
     // Get relevant json data
     responseJSON  := profileResponse.(map[string]interface{})
-    fmt.Println(responseJSON)
     responseMap   := responseJSON["Response"].(map[string]interface{})
     characterMap  := responseMap["characters"].(map[string]interface{})["data"].(map[string]interface{})
 
@@ -263,11 +262,28 @@ func setActiveCharacter(user User) string {
             dateString)
         if (date.After(latestDate)) {
             activeCharacter = k
+            latestDate = date
         }
-        fmt.Println(date)
     }
-    fmt.Println("Active Character is: " + activeCharacter)
-    // destinyMembershipsArray := responseMap["destinyMemberships"].([]interface{})
+
+    collection := db.Database(dbName).Collection("users")
+
+    filter := bson.M{"discordid": bson.M{"$eq": user.DiscordID}}
+    update := bson.M{"$set": bson.M{"activecharacter": activeCharacter}}
+
+    // Call the driver's UpdateOne() method and pass filter and update to it
+    _, err = collection.UpdateOne(
+        context.Background(),
+        filter,
+        update,
+    )
+    if ( err != nil ) {
+        fmt.Println(err)
+    }
+
+
+    // Debug
+    fmt.Println("Active CharacterId is: " + activeCharacter)
 
     return activeCharacter
 }
