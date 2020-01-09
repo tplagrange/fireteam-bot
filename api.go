@@ -240,7 +240,10 @@ func setActiveCharacter(user User) string {
     resp, _ := client.Do(req)
 
     // Parse response json for character ids
-    _ = json.NewDecoder(resp.Body).Decode(&profileResponse)
+    err := json.NewDecoder(resp.Body).Decode(&profileResponse)
+    if ( err != nil ) {
+        fmt.Println(err)
+    }
     resp.Body.Close()
 
     // Get relevant json data
