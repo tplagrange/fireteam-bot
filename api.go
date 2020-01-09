@@ -82,8 +82,11 @@ func bungieCallback(c *gin.Context) {
                 destinyMemberships = append(destinyMemberships, tmpMembership)
             }
 
+            // TODO: Get the loadouts and fill the class
+            loadouts := make([]Loadout, 0)
+
             // Insert new user entry
-            newUser := User{state, destinyMemberships, "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
+            newUser := User{loadouts, destinyMemberships, state, "-1", "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
             insertResult, err := collection.InsertOne(context.TODO(), newUser)
             if err != nil {
                 fmt.Println(err)
@@ -155,28 +158,29 @@ func getLoadout(c *gin.Context) {
     switch returnCode := validate(discordID); returnCode {
     // Success Condition
     case 200:
+        // TODO: Update Active Character
+        //
+        //
+        
+
+        client := &http.Client{}
         reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
                   result.ActiveMembership +
                   "/Character/" +
                   result.ActiveCharacter +
                   "/?components=205"
-        req, _ := http.NewRequest("GET", reqURL, strings.NewReader(data.Encode()))
-
-
-        req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET"))))
-        req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        req, _ := http.NewRequest("GET", reqURL, nil)
+        req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
         resp, _ := client.Do(req)
 
         // Assess GetToken Response Code
         if resp.StatusCode == http.StatusOK {
-            var tokenResponse TokenResponse
-            // This could potentialy be changed to use unmarshalling to save memory
-            err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
-            // err := json.Unmarshal(resp.Body, &tokenResponse)
-            resp.Body.Close()
-            if err != nil {
-                fmt.Println(err)
-            }
+        // TODO: Store Inventory Data for Character
+        //
+        //
+
+
+        }
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:

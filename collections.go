@@ -1,13 +1,20 @@
 package main
 
+type Loadout struct {
+    Items   []Item
+    Name    string
+    id      uint32
+}
+
 type Membership struct {
-    MembershipType  float64
-    MembershipID    string
+    MembershipID    float64
+    MembershipType  string
 }
 
 type User struct {
-    DiscordID         string
+    Loadouts          []Loadout
     Membership        []Membership
+    DiscordID         string
     ActiveMembership  string
     ActiveCharacter   string
     AccessToken       string
@@ -19,7 +26,7 @@ type User struct {
 // }
 
 type Item struct {
-    name    string
-    id      string
-    type    string
+    Name    string
+    Id      string
+    Type    string
 }
