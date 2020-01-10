@@ -140,6 +140,23 @@ func bungieAuth(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
+func renewToken(refreshToken string) {
+    client := &http.Client{}
+    data := url.Values{}
+    data.Set("grant_type", "refresh_token")
+    data.Set("refresh_token", refreshToken)
+    req, _ := http.NewRequest("POST", "https://www.bungie.net/platform/app/oauth/token/", strings.NewReader(data.Encode()))
+    req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET"))))
+    req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    resp, _ := client.Do(req)
+
+    defer resp.Body.Close()
+    if resp.StatusCode == http.StatusOK {
+
+    }
+
+}
+
 // Call this function before running any privileged calls
 // TODO: Include a check for active token that refreshes the token
 func validate(id string) int {
@@ -199,6 +216,8 @@ func getCurrentLoadout(c *gin.Context) {
 
         resp, _ := client.Do(req)
 
+        defer resp.Body.Close()
+
         if resp.StatusCode == http.StatusOK {
             // Store Inventory Data for Character
 
@@ -217,7 +236,6 @@ func getCurrentLoadout(c *gin.Context) {
 
             var jsonResponse interface{}
             err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
-            resp.Body.Close()
 
             items  := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["equipment"].(map[string]interface{})["data"].(map[string]interface{})["items"].([]interface{})
 
@@ -246,7 +264,6 @@ func getCurrentLoadout(c *gin.Context) {
             }
 
         }
-        resp.Body.Close()
 
     case 300:
         c.String(300, "Please select a membership ID to continue request")
@@ -255,6 +272,13 @@ func getCurrentLoadout(c *gin.Context) {
     default:
         c.String(500, "Unexpected error")
     }
+}
+
+// Sets a saved loadout for the use
+func setLoadout(c *gin.Context) {
+    discordID   := c.Query("id")
+    loadoutName := c.Query("name")
+    fmt.Println(discordID + loadoutName)
 }
 
 func getActiveMembership() {
