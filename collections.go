@@ -1,9 +1,12 @@
 package main
 
+type Item struct {
+    Id      string
+}
+
 type Loadout struct {
     Items   []Item
     Name    string
-    id      uint32
 }
 
 type Membership struct {
@@ -19,14 +22,4 @@ type User struct {
     ActiveCharacter   string
     AccessToken       string
     RefreshToken      string
-}
-
-// type Manifests struct {
-//     DestinyInventoryBucketDefinition    string
-// }
-
-type Item struct {
-    Name    string
-    Id      string
-    Type    string
 }

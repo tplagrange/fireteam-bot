@@ -68,31 +68,46 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
     user := m.Author.ID
     words := strings.Split(m.Content, " ")
 
+    userChannel, err := s.UserChannelCreate(user)
+    if ( err != nil ) {
+        fmt.Println(err)
+    }
+
     // Output help if not enough input
     if ( len(words) <= 1 ) {
-        userChannel, err := s.UserChannelCreate(user)
         if err != nil {
             fmt.Println(err)
         }
         s.ChannelMessageSend(userChannel.ID, help())
+        return
     }
 
 	// check for "loadout" command
-	if ( words[2] == "loadout" ) {
-
-
-        // Debug to acknowledge the message in discord
-		s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
-        // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
-
-
-
-
+	if ( words[1] == "save" ) {
+        if ( len(words) < 3) {
+            s.ChannelMessageSend(userChannel.ID, help())
+            return
+        }
+        name := words[2]
+        code := saveLoadout(user, name)
+        if ( code == 401 ) {
+            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
+        } else if ( code == 300 ) {
+            s.ChannelMessageSend(userChannel.ID, "User must select active membership")
+        } else if ( code != 200 ) {
+            s.ChannelMessageSend(userChannel.ID, "Error saving loadout: " + name)
+        } else {
+            s.ChannelMessageSend(userChannel.ID, "Saved loadout: " + name)
+        }
     }
+
+    // Debug to acknowledge the message in discord
+    // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
+    // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 }
 
 // Save a loadout for a user
-func saveLoadout(s *discordgo.Session, m *discordgo.MessageCreate) {
+func saveLoadout(user string, loadoutName string) int {
     // make api call to backend, request loadout for discord user id
     res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" +
                 "?id=" + user +
@@ -101,16 +116,7 @@ func saveLoadout(s *discordgo.Session, m *discordgo.MessageCreate) {
         fmt.Println(err)
     }
 
-    if res.StatusCode() == 401 {
-        userChannel, err := s.UserChannelCreate(user)
-        if err != nil {
-            fmt.Println(err)
-        }
-
-        // User must authenticate with bungie
-        // Direct message the user with a registration link
-        s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/" + user)
-    }
+    return res.StatusCode()
 }
 
 // Equip a loadout for a user

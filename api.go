@@ -126,7 +126,7 @@ func bungieCallback(c *gin.Context) {
 
 // Direct the discord user to bungie's OAUTH 2.0 Mechanism
 func bungieAuth(c *gin.Context) {
-    discordID := c.Param("id")
+    discordID := c.Query("id")
 
     fmt.Println(discordID)
 
@@ -169,8 +169,9 @@ func validate(id string) int {
 
 // Return a json object containing the guardian's loadout
 func getCurrentLoadout(c *gin.Context) {
-    loadoutName := c.Query("name")
     discordID   := c.Param("id")
+    loadoutName := c.Query("name")
+
     filter      := bson.D{{ "discordid", discordID}}
     collection  := db.Database(dbName).Collection("users")
 
@@ -195,11 +196,38 @@ func getCurrentLoadout(c *gin.Context) {
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
         resp, _ := client.Do(req)
 
-        // Assess GetToken Response Code
         if resp.StatusCode == http.StatusOK {
-        // TODO: Store Inventory Data for Character
-        //
-        //
+            // Store Inventory Data for Character
+
+            // If there is already a loadout by that name, update that loadout
+            // Otherwise, create a new loadout
+            loadout := Loadout{make([]Item, 0), loadoutName}
+
+            var jsonResponse interface{}
+            err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
+            resp.Body.Close()
+
+            items  := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["equipment"].(map[string]interface{})["data"].(map[string]interface{})["items"].([]interface{})
+
+            for _, u := range items {
+                valuesMap := u.(map[string]interface{})
+                loadout.Items = append(loadout.Items, Item{valuesMap["itemInstanceId"].(string)})
+            }
+            result.Loadouts = append(result.Loadouts, loadout)
+
+            filter := bson.M{"discordid": bson.M{"$eq": result.DiscordID}}
+            update := bson.M{"$set": bson.M{"loadout": result.Loadouts}}
+
+            // Call the driver's UpdateOne() method and pass filter and update to it
+            _, err = collection.UpdateOne(
+                context.Background(),
+                filter,
+                update,
+            )
+            if ( err != nil ) {
+                fmt.Println(err)
+            }
+
         }
         resp.Body.Close()
 
