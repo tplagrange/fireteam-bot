@@ -53,6 +53,7 @@ func bungieCallback(c *gin.Context) {
 
         collection := db.Database(dbName).Collection("users")
 
+        // TODO: Change this to update
         // Delete any existing entries for this user
         filter := bson.D{{ "discordid", state}}
         deleteResult, err := collection.DeleteOne(context.TODO(), filter)
@@ -140,11 +141,11 @@ func bungieAuth(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
-func renewToken(refreshToken string) {
+func refreshToken(user User) {
     client := &http.Client{}
     data := url.Values{}
     data.Set("grant_type", "refresh_token")
-    data.Set("refresh_token", refreshToken)
+    data.Set("refresh_token", user.RefreshToken)
     req, _ := http.NewRequest("POST", "https://www.bungie.net/platform/app/oauth/token/", strings.NewReader(data.Encode()))
     req.Header.Add("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET"))))
     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -152,6 +153,24 @@ func renewToken(refreshToken string) {
 
     defer resp.Body.Close()
     if resp.StatusCode == http.StatusOK {
+        var tokenResponse TokenResponse
+        // This could potentialy be changed to use unmarshalling to save memory
+        err := json.NewDecoder(resp.Body).Decode(&tokenResponse)
+        // err := json.Unmarshal(resp.Body, &tokenResponse)
+        resp.Body.Close()
+        if err != nil {
+            fmt.Println(err)
+        }
+
+        collection := db.Database(dbName).Collection("users")
+        filter := bson.M{"discordid": bson.M{"$eq": user.DiscordID}}
+        update := bson.M{"$set": bson.M{"accesstoken": tokenResponse.Access_token, "refreshtoken": tokenResponse.Refresh_token}}
+
+        // Call the driver's UpdateOne() method and pass filter and update to it
+        _, err = collection.UpdateOne( context.Background(), filter, update )
+        if ( err != nil ) {
+            fmt.Println(err)
+        }
 
     }
 
