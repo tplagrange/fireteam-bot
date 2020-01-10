@@ -203,8 +203,17 @@ func getCurrentLoadout(c *gin.Context) {
             // Store Inventory Data for Character
 
             // If there is already a loadout by that name, update that loadout
-            // Otherwise, create a new loadout
-            loadout := Loadout{make([]Item, 0), loadoutName}
+            var loadout Loadout
+            newLoadout   := true
+            loadoutIndex := -1
+            for i, u := range result.Loadouts {
+                if (u.Name == loadoutName) {
+                    newLoadout = false
+                    loadoutIndex = i
+                }
+            }
+
+            loadout = Loadout{make([]Item, 0), loadoutName}
 
             var jsonResponse interface{}
             err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
@@ -216,10 +225,15 @@ func getCurrentLoadout(c *gin.Context) {
                 valuesMap := u.(map[string]interface{})
                 loadout.Items = append(loadout.Items, Item{valuesMap["itemInstanceId"].(string)})
             }
-            result.Loadouts = append(result.Loadouts, loadout)
+
+            if (newLoadout) {
+                result.Loadouts = append(result.Loadouts, loadout)
+            } else {
+                result.Loadouts[loadoutIndex] = loadout
+            }
 
             filter := bson.M{"discordid": bson.M{"$eq": result.DiscordID}}
-            update := bson.M{"$set": bson.M{"loadout": result.Loadouts}}
+            update := bson.M{"$set": bson.M{"loadouts": result.Loadouts}}
 
             // Call the driver's UpdateOne() method and pass filter and update to it
             _, err = collection.UpdateOne(
