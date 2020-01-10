@@ -169,9 +169,10 @@ func validate(id string) int {
 
 // Return a json object containing the guardian's loadout
 func getCurrentLoadout(c *gin.Context) {
-    discordID  := c.Param("id")
-    filter     := bson.D{{ "discordid", discordID}}
-    collection := db.Database(dbName).Collection("users")
+    loadoutName := c.Query("name")
+    discordID   := c.Param("id")
+    filter      := bson.D{{ "discordid", discordID}}
+    collection  := db.Database(dbName).Collection("users")
 
     var result User
     err := collection.FindOne(context.TODO(), filter).Decode(&result)
@@ -182,9 +183,6 @@ func getCurrentLoadout(c *gin.Context) {
     switch returnCode := validate(discordID); returnCode {
     // Success Condition
     case 200:
-        // TODO: Update Active Character
-        //
-        //
         activeCharacter := setActiveCharacter(result)
 
         client := &http.Client{}
@@ -220,7 +218,6 @@ func getActiveMembership() {
 }
 
 // Sets and returns the most recently played character id
-// TODO: Implement for all calls to character
 func setActiveCharacter(user User) string {
     var profileResponse interface{}
 
@@ -280,10 +277,6 @@ func setActiveCharacter(user User) string {
     if ( err != nil ) {
         fmt.Println(err)
     }
-
-
-    // Debug
-    fmt.Println("Active CharacterId is: " + activeCharacter)
 
     return activeCharacter
 }

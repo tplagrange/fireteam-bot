@@ -50,6 +50,8 @@ func Bot() {
 
 // This function will be called (due to AddHandler above) every time a new
 // message is created on any channel that the autenticated bot has access to.
+// Include logic here that will deal with user interactions, call functions
+// to do things like http calls to the backend api.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
@@ -57,31 +59,66 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// check if the message is "-loadout"
-	if strings.HasPrefix(m.Content, "-loadout") {
 
-        user := m.Author.ID
+    // Ensure fireteam bot is being referenced at all
+    if (!strings.HasPrefix(m.Content, "-fb")) {
+        return
+    }
+
+    user := m.Author.ID
+    words := strings.Split(m.Content, " ")
+
+    // Output help if not enough input
+    if ( len(words) <= 1 ) {
+        userChannel, err := s.UserChannelCreate(user)
+        if err != nil {
+            fmt.Println(err)
+        }
+        s.ChannelMessageSend(userChannel.ID, help())
+    }
+
+	// check for "loadout" command
+	if ( words[2] == "loadout" ) {
+
 
         // Debug to acknowledge the message in discord
 		s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
         // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 
-        // make api call to backend, request loadout for discord user id
-        res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" + user)
+
+
+
+    }
+}
+
+// Save a loadout for a user
+func saveLoadout(s *discordgo.Session, m *discordgo.MessageCreate) {
+    // make api call to backend, request loadout for discord user id
+    res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" +
+                "?id=" + user +
+                "&name=" + loadoutName)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    if res.StatusCode() == 401 {
+        userChannel, err := s.UserChannelCreate(user)
         if err != nil {
             fmt.Println(err)
         }
 
-        if res.StatusCode() == 401 {
-            userChannel, err := s.UserChannelCreate(user)
-            if err != nil {
-                fmt.Println(err)
-            }
-
-            // User must authenticate with bungie
-            // Direct message the user with a registration link
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/" + user)
-        }
-
+        // User must authenticate with bungie
+        // Direct message the user with a registration link
+        s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/" + user)
     }
+}
+
+// Equip a loadout for a user
+func equipLoadout() {
+
+}
+
+// Outputs the how-to
+func help() string {
+    return "Please format commands to fireteam-bot as `-fb command parameter`"
 }
