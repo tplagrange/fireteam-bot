@@ -169,7 +169,7 @@ func validate(id string) int {
 
 // Return a json object containing the guardian's loadout
 func getCurrentLoadout(c *gin.Context) {
-    discordID   := c.Param("id")
+    discordID   := c.Query("id")
     loadoutName := c.Query("name")
 
     filter      := bson.D{{ "discordid", discordID}}
@@ -196,7 +196,7 @@ func getCurrentLoadout(c *gin.Context) {
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
 
         fmt.Println(reqURL)
-        
+
         resp, _ := client.Do(req)
 
         if resp.StatusCode == http.StatusOK {
