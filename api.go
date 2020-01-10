@@ -194,6 +194,9 @@ func getCurrentLoadout(c *gin.Context) {
                   "/?components=205"
         req, _ := http.NewRequest("GET", reqURL, nil)
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+
+        fmt.Println(reqURL)
+        
         resp, _ := client.Do(req)
 
         if resp.StatusCode == http.StatusOK {
