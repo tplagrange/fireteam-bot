@@ -11,4 +11,5 @@ func initRoutes(router *gin.Engine) {
     router.GET("/api/bungie/auth/", bungieAuth)
 
     router.GET("/api/loadout/", getCurrentLoadout)
+    router.GET("/api/loadout/:name/", setLoadout)
 }

@@ -305,7 +305,7 @@ func getCurrentLoadout(c *gin.Context) {
 // Sets a saved loadout for the use
 func setLoadout(c *gin.Context) {
     discordID   := c.Query("id")
-    loadoutName := c.Query("name")
+    loadoutName := c.Param("name")
 
     filter      := bson.D{{ "discordid", discordID}}
     collection  := db.Database(dbName).Collection("users")
