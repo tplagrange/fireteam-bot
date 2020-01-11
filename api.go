@@ -1,6 +1,7 @@
 package main
 
 import (
+    "bytes"
     "context"
     "encoding/base64"
     "encoding/json"
@@ -8,6 +9,7 @@ import (
     "os"
     "net/http"
     "net/url"
+    "strconv"
     "strings"
     "time"
 
@@ -23,6 +25,12 @@ type TokenResponse struct {
     Refresh_token   string
     Refresh_expires_in  int
     Membership_id   string
+}
+
+type ItemSetActionRequest struct {
+    ItemIds        []int
+    CharacterId    int
+    MembershipType int
 }
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
@@ -53,7 +61,6 @@ func bungieCallback(c *gin.Context) {
 
         collection := db.Database(dbName).Collection("users")
 
-        // TODO: Change this to update
         // Delete any existing entries for this user
         filter := bson.D{{ "discordid", state}}
         deleteResult, err := collection.DeleteOne(context.TODO(), filter)
@@ -297,7 +304,83 @@ func getCurrentLoadout(c *gin.Context) {
 func setLoadout(c *gin.Context) {
     discordID   := c.Query("id")
     loadoutName := c.Query("name")
-    fmt.Println(discordID + loadoutName)
+
+    filter      := bson.D{{ "discordid", discordID}}
+    collection  := db.Database(dbName).Collection("users")
+
+    var user User
+    err := collection.FindOne(context.TODO(), filter).Decode(&user)
+    if err != nil {
+        fmt.Println(err)
+
+    }
+
+    switch returnCode := validate(discordID); returnCode {
+    // Success Condition
+    case 200:
+        var items []int
+        activeCharacter := setActiveCharacter(user)
+
+        for _, l := range user.Loadouts {
+            if ( l.Name == loadoutName ) {
+                for _, i := range l.Items {
+                    itemID, _ := strconv.Atoi(i.Id)
+                    items = append(items, itemID)
+                }
+            }
+        }
+
+        ///
+        /// Assuming this is on PC
+        ///
+        mid := 3 // Membership type set to 3; for PC
+        cid, _ := strconv.Atoi(activeCharacter)
+
+        loadout := ItemSetActionRequest{
+            ItemIds: items,
+            CharacterId: cid,
+            MembershipType: mid,
+        }
+        loadoutJSON, err := json.Marshal(loadout)
+        if err != nil {
+            fmt.Println(err)
+        }
+
+        client := &http.Client{}
+        reqURL := " http://www.bungie.net/Platform/Destiny2/Actions/Items/EquipItems/"
+        req, _ := http.NewRequest("POST", reqURL, bytes.NewBuffer(loadoutJSON))
+        req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+        req.Header.Add("Authorization", "Bearer " + user.AccessToken)
+        req.Header.Add("Content-Type", "application/json")
+
+        fmt.Println(reqURL)
+
+        resp, _ := client.Do(req)
+
+        switch r := resp.StatusCode; r {
+        case 200:
+            fmt.Println("Set Loadout to: " + loadoutName)
+        case 401:
+            // Token is wrong or expired; retry after refreshing
+            refreshToken(user)
+            reqURL = " http://www.bungie.net/Platform/Destiny2/Actions/Items/EquipItems/"
+            req, _ = http.NewRequest("POST", reqURL, bytes.NewBuffer(loadoutJSON))
+            req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+            req.Header.Add("Authorization", "Bearer " + user.AccessToken)
+            req.Header.Add("Content-Type", "application/json")
+            resp, _ = client.Do(req)
+
+            if ( resp.StatusCode == 200) {
+                c.String(200, "Set Loadout to: " + loadoutName)
+            } else {
+                c.String(500, "Error refreshing token")
+            }
+        default:
+            fmt.Println("Error setting loadout to: " + loadoutName)
+        }
+    default:
+        c.String(500, "Error setting loadout")
+    }
 }
 
 func getActiveMembership() {
