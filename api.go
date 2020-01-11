@@ -148,7 +148,7 @@ func bungieAuth(c *gin.Context) {
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
 
-func refreshToken(user User) {
+func refreshToken(user User) string {
     client := &http.Client{}
     data := url.Values{}
     data.Set("grant_type", "refresh_token")
@@ -179,8 +179,10 @@ func refreshToken(user User) {
             fmt.Println(err)
         }
 
+        return tokenResponse.Access_token
+    } else {
+        return user.AccessToken
     }
-
 }
 
 // Call this function before running any privileged calls
