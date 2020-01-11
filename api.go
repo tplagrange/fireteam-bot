@@ -349,7 +349,7 @@ func setLoadout(c *gin.Context) {
         }
 
         client := &http.Client{}
-        reqURL := " http://www.bungie.net/Platform/Destiny2/Actions/Items/EquipItems/"
+        reqURL := "http://www.bungie.net/Platform/Destiny2/Actions/Items/EquipItems/"
         req, _ := http.NewRequest("POST", reqURL, bytes.NewBuffer(loadoutJSON))
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
         req.Header.Add("Authorization", "Bearer " + user.AccessToken)
