@@ -254,16 +254,16 @@ func getPartyShaders(c *gin.Context) {
         err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
         resp.Body.Close()
 
+        responseMap, ok := jsonResponse.(map[string]interface{})
         partyMIDs := make([]string, 0)
-        if ( jsonResponse == nil ) {
-            partyMIDs = append(partyMIDs, result.ActiveMembership)
-        } else {
-            members := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})["data"].(map[string]interface{})["partyMembers"].([]interface{})
-
-           for _, u := range members {
+        if ok {
+            members := responseMap["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})["data"].(map[string]interface{})["partyMembers"].([]interface{})
+            for _, u := range members {
                 valuesMap := u.(map[string]interface{})
                 partyMIDs = append(partyMIDs, valuesMap["membershipId"].(string))
             }
+        } else {
+            partyMIDs = append(partyMIDs, result.ActiveMembership)
         }
 
         // Now we need to get the active character id for every membership ID
