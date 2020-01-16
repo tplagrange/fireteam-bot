@@ -115,6 +115,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else {
             s.ChannelMessageSend(userChannel.ID, "Set loadout: " + name)
         }
+    } else if ( words[1] == "shaders" ) {
+        code := getPartyShaders(user)
+        if ( code == 401 ) {
+            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
+        } else if ( code == 300 ) {
+            s.ChannelMessageSend(userChannel.ID, "User must select active membership")
+        } else if ( code != 200 ) {
+            s.ChannelMessageSend(userChannel.ID, "Error getting shaders")
+        } else {
+            s.ChannelMessageSend(userChannel.ID, "Got shaders")
+        }     
     }
 
     // Debug to acknowledge the message in discord
@@ -140,6 +151,17 @@ func equipLoadout(user string, loadoutName string) int {
     res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadout/" +
                 loadoutName + "/" +
                 "?id=" + user)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    return res.StatusCode()
+}
+
+func getPartyShaders(user string) int {
+    res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") +
+            "/api/shaders/" +
+            "?id=" + user)
     if err != nil {
         fmt.Println(err)
     }
