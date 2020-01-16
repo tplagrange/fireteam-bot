@@ -42,3 +42,5 @@ func connectClient() *mongo.Client {
     fmt.Println("Connected to db: " + dbName)
     return client
 }
+
+// TODO: Move save, delete, update, etc. functionality here

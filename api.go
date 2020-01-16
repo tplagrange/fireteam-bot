@@ -11,6 +11,7 @@ import (
     "net/url"
     "strconv"
     "strings"
+    "sync"
     "time"
 
     "github.com/gin-gonic/gin"
@@ -31,6 +32,11 @@ type ItemSetActionRequest struct {
     ItemIds        []int
     CharacterId    int
     MembershipType int
+}
+
+type SafeSlice struct {
+    s   []string
+    mux sync.Mutex
 }
 
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
@@ -212,6 +218,111 @@ func validate(id string) int {
     return 200
 }
 
+// Returns a lits of shaders (by name) that all members of the party have collected
+func getPartyShaders(c *gin.Context) {
+    discordID   := c.Query("id")
+
+    // Find the user in the database
+    filter      := bson.D{{ "discordid", discordID}}
+    collection  := db.Database(dbName).Collection("users")
+
+    var result User
+    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    switch returnCode := validate(discordID); returnCode {
+    case 200:
+        // Get the membership IDs of the party members
+        client := &http.Client{}
+        reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
+                  result.ActiveMembership +
+                  "/?components=1000"
+        req, _ := http.NewRequest("GET", reqURL, nil)
+        req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+
+        resp, _ := client.Do(req)
+
+        if resp.StatusCode == http.StatusOK {
+        } else {
+            c.String(resp.StatusCode, "Error getting profile information")
+            return
+        }
+
+        var jsonResponse interface{}
+        err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
+        resp.Body.Close()
+
+        members, ok := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})["data"].(map[string]interface{})["partyMembers"].([]interface{})
+
+        partyMIDs := make([]string, 0)
+        if ok {
+            for _, u := range members {
+                valuesMap := u.(map[string]interface{})
+                partyMIDs = append(partyMIDs, valuesMap["membershipId"].(string))
+            }
+        } else {
+            partyMIDs = append(partyMIDs, result.ActiveMembership)
+        }
+
+        // Now we need to get the active character id for every membership ID
+        apiQueries := SafeSlice{s: make([]string, 0)}
+
+        var wg sync.WaitGroup
+        for _, u := range partyMIDs {
+            wg.Add(1)
+            go func(wait *sync.WaitGroup) {
+                defer wait.Done()
+                cid := getActiveCharacter(u)
+                apiQueries.mux.Lock()
+                apiQueries.s = append(apiQueries.s, u + "/Character/" + cid)
+                apiQueries.mux.Unlock()
+            }(&wg)
+        }
+        wg.Wait()
+
+        // Now we have every character ID in the party, we need to get shader information for every character
+        for _, query := range apiQueries.s {
+            wg.Add(1)
+            go func(q string, wait *sync.WaitGroup) {
+                defer wait.Done()
+
+                shaderURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
+                          q +
+                          "/Collectibles/" +
+                          "2063273188/" +
+                          "/?components=800"
+                shaderReq, _ := http.NewRequest("GET", shaderURL, nil)
+                shaderReq.Header.Add("X-API-Key", os.Getenv("API_KEY"))
+                shaderResp, _ := client.Do(req)
+
+                if shaderResp.StatusCode == http.StatusOK {
+                } else {
+                    c.String(shaderResp.StatusCode, "Error getting shader information")
+                    return
+                }
+
+                var shaderJSON interface{}
+                err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
+                shaderResp.Body.Close()
+
+                if ( err != nil ) {
+                    fmt.Println(err)
+                }
+
+            }(query, &wg)
+        }
+        wg.Wait()
+    case 300:
+        c.String(300, "Please select a membership ID to continue request")
+    case 401:
+        c.String(401, "User must register")
+    default:
+        c.String(500, "Unexpected error")
+    }
+}
+
 // Return a json object containing the guardian's loadout
 func getCurrentLoadout(c *gin.Context) {
     discordID   := c.Query("id")
@@ -390,20 +501,14 @@ func getActiveMembership() {
     return
 }
 
-// Sets and returns the most recently played character id
-func setActiveCharacter(user User) string {
+// Simply gets and returns a string containing the most recently played character id
+func getActiveCharacter(mid string) string {
     var profileResponse interface{}
-
-    // If user has no active membership, must update
-    if (user.ActiveMembership == "-1") {
-        // getActiveMembership()
-        return "-1"
-    }
 
     // Make GET request to Profile endpoint
     client := &http.Client{}
     reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
-              user.ActiveMembership +
+              mid +
               "/?components=200"
     req, _ := http.NewRequest("GET", reqURL, nil)
     req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
@@ -436,13 +541,26 @@ func setActiveCharacter(user User) string {
         }
     }
 
+    return activeCharacter
+}
+
+// Sets and returns the most recently played character id
+func setActiveCharacter(user User) string {
+    // If user has no active membership, must update
+    if (user.ActiveMembership == "-1") {
+        // getActiveMembership()
+        return "-1"
+    }
+
+    activeCharacter := getActiveCharacter(user.ActiveMembership)
+
     collection := db.Database(dbName).Collection("users")
 
     filter := bson.M{"discordid": bson.M{"$eq": user.DiscordID}}
     update := bson.M{"$set": bson.M{"activecharacter": activeCharacter}}
 
     // Call the driver's UpdateOne() method and pass filter and update to it
-    _, err = collection.UpdateOne(
+    _, err := collection.UpdateOne(
         context.Background(),
         filter,
         update,
