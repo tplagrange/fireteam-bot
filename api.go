@@ -254,8 +254,9 @@ func getPartyShaders(c *gin.Context) {
         err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
         resp.Body.Close()
 
-        responseMap, ok := jsonResponse.(map[string]interface{})
         partyMIDs := make([]string, 0)
+
+        responseMap, ok := jsonResponse.(map[string]interface{})
         if ok {
             members := responseMap["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})["data"].(map[string]interface{})["partyMembers"].([]interface{})
             for _, u := range members {
