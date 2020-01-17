@@ -305,6 +305,8 @@ func getPartyShaders(c *gin.Context) {
                 shaderReq.Header.Add("X-API-Key", os.Getenv("API_KEY"))
                 shaderResp, _ := client.Do(req)
 
+                fmt.Println(shaderURL)
+
                 if shaderResp.StatusCode == http.StatusOK {
                 } else {
                     c.String(shaderResp.StatusCode, "Error getting shader information")
