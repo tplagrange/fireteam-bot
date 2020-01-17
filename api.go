@@ -224,15 +224,7 @@ func validate(id string) int {
 func getPartyShaders(c *gin.Context) {
     discordID   := c.Query("id")
 
-    // Find the user in the database
-    filter      := bson.D{{ "discordid", discordID}}
-    collection  := db.Database(dbName).Collection("users")
-
-    var result User
-    err := collection.FindOne(context.TODO(), filter).Decode(&result)
-    if err != nil {
-        fmt.Println(err)
-    }
+    result := findUser(discordID)
 
     switch returnCode := validate(discordID); returnCode {
     case 200:
@@ -253,7 +245,10 @@ func getPartyShaders(c *gin.Context) {
         }
 
         var jsonResponse interface{}
-        err = json.NewDecoder(resp.Body).Decode(&jsonResponse)
+        err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
+        if err != nil {
+            fmt.Println(err)
+        }
         resp.Body.Close()
 
         partyMIDs := make([]string, 0)
@@ -566,7 +561,8 @@ func getActiveCharacter(mid string) string {
     characterMap  := responseMap["characters"].(map[string]interface{})["data"].(map[string]interface{})
 
     activeCharacter := "-1"
-    latestDate := time.Time{} // The zero value of type Time is January 1, year 1, 00:00:00.000000000 UTC.
+    latestDate := time.Time{}
+
     for k, v := range characterMap {
         dateString := v.(map[string]interface{})["dateLastPlayed"].(string) // e.g. "2020-01-09T06:11:35Z"
         date, _    := time.Parse(

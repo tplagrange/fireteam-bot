@@ -11,8 +11,9 @@ import (
     "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbName    string
-var userTable string
+var dbName      string
+var userTable   string
+var shaderTable string
 
 func connectClient() *mongo.Client {
     mongoURI := os.Getenv("MONGODB_URI")
@@ -41,14 +42,33 @@ func connectClient() *mongo.Client {
     }
 
     // Set table names
+    shaderTable = "shaders"
     userTable = "users"
 
-    fmt.Println("Connected to db: " + dbName)
+    // Update the Shader Table
+    go getShaderHashes()
 
+    fmt.Println("Connected to db: " + dbName)
     return client
 }
 
-// TODO: Move save, delete, update, etc. functionality here
+//////////////
+// User Operations
+//////////////
+
+func findUser(id string) User {
+    // Find the user in the database
+    filter      := bson.D{{ "discordid", id}}
+    collection  := db.Database(dbName).Collection(userTable)
+
+    var result User
+    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    return result
+}
 
 func deleteUser(id string) {
     collection := db.Database(dbName).Collection(userTable)
@@ -98,5 +118,58 @@ func createUser(user User) {
         fmt.Println(err)
     } else {
         fmt.Println(insertResult.InsertedID)
+    }
+}
+
+//////////////
+// Shader Operations
+//////////////
+func findShader(hash string) (Shader, error) {
+    // Find the user in the database
+    filter      := bson.D{{ "hash", hash}}
+    collection  := db.Database(dbName).Collection(shaderTable)
+
+    var result Shader
+    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    if err != nil {
+        return Shader{}, err
+    }
+
+    return result, err
+}
+
+func updateShaderHashes(json interface{}) {
+    manifest := json.(map[string]interface{})
+
+    for hash, data := range manifest {
+        info := data.(map[string]interface{})["displayProperties"].(map[string]interface{})
+        name := info["name"].(string)
+        icon := info["icon"].(string)
+
+        go updateShader(Shader{hash, name, icon})
+    }
+}
+
+func updateShader(shader Shader) {
+    collection  := db.Database(dbName).Collection(shaderTable)
+    filter := bson.M{"_id": bson.M{"$eq": shader.Hash}}
+    update := bson.M{
+        "$set": bson.M{
+          "name": shader.Name,
+          "icon": shader.Icon,
+        },
+    }
+
+    result, err := collection.UpdateOne(
+        context.Background(),
+        filter,
+        update,
+        options.Update().SetUpsert(true),
+    )
+
+    if err != nil {
+        fmt.Println(err)
+    } else {
+        fmt.Println(result)
     }
 }

@@ -23,3 +23,9 @@ type User struct {
     AccessToken       string
     RefreshToken      string
 }
+
+type Shader struct {
+    Hash    string    `bson:"_id"`
+    Name    string
+    Icon    string
+}
