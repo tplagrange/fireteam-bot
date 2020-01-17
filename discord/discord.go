@@ -1,6 +1,7 @@
 package discord
 
 import (
+    "encoding/json"
     "fmt"
     "os"
     "os/signal"
@@ -10,6 +11,12 @@ import (
     "github.com/bwmarrin/discordgo"
     "github.com/go-resty/resty/v2"
 )
+
+type Shader struct {
+    Hash    string    `bson:"_id"`
+    Name    string
+    Icon    string
+}
 
 // Use a resty http client to make queries to the backend
 // TODO: Replace this with the built in http client?
@@ -118,8 +125,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
     } else if ( words[1] == "shaders" ) {
         var response resty.Response 
         getPartyShaders(user, &response)
-        fmt.Println(response.String())
         code := response.StatusCode()
+        var shaders []Shader
+        json.Unmarshal(response.Body(), &shaders)
+
         if ( code == 401 ) {
             s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
         } else if ( code == 300 ) {
@@ -127,7 +136,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else if ( code != 200 ) {
             s.ChannelMessageSend(userChannel.ID, "Error getting shaders")
         } else {
-            s.ChannelMessageSend(userChannel.ID, response.String())
+            for _, shader := range shaders {
+                s.ChannelMessageSend(m.ChannelID, shader.Name)
+            }
         }     
     }
 
