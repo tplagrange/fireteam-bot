@@ -39,6 +39,11 @@ type SafeSlice struct {
     mux sync.Mutex
 }
 
+type SafeMap struct {
+    m    map[string]int
+    mux  sync.Mutex
+}
+
 // Handle the redirect URL from Bungie's OAUTH 2.0 Mechanism
 func bungieCallback(c *gin.Context) {
     code := c.Query("code")
@@ -283,7 +288,9 @@ func getPartyShaders(c *gin.Context) {
         }
         wg.Wait()
 
+
         // Now we have every character ID in the party, we need to get shader information for every character
+        shaderHashes := SafeMap{m: make(map[string]int)}
         for _, query := range apiQueries.s {
             wg.Add(1)
             go func(q string, wait *sync.WaitGroup) {
@@ -308,13 +315,44 @@ func getPartyShaders(c *gin.Context) {
                 err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
                 shaderResp.Body.Close()
 
-                if ( err != nil ) {
-                    fmt.Println(err)
-                }
+                hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
 
+                for hash, state := range hashData {
+                    // We will track the counts of shader hashes present using a hash
+                    // If the hash value int is equal to the number of characters in the party, then everyone has the shader
+                    if state != 0 {
+                        continue
+                    }
+                    shaderHashes.mux.Lock()
+                    count, ok := shaderHashes.m[hash]
+                    shaderHashes.mux.Unlock()
+                    if ok {
+                        shaderHashes.mux.Lock()
+                        shaderHashes.m[hash] = count + 1
+                        shaderHashes.mux.Unlock()
+                    } else {
+                        shaderHashes.mux.Lock()
+                        shaderHashes.m[hash] = 0
+                        shaderHashes.mux.Unlock()
+                    }
+
+                    if ( err != nil ) {
+                        fmt.Println(err)
+                    }
+                }
             }(query, &wg)
         }
         wg.Wait()
+
+        commonHashes  := make([]string, 0)
+        numCharacters := len(apiQueries.s)
+        for hash, count := range shaderHashes.m {
+            if count == numCharacters {
+                commonHashes = append(commonHashes, hash)
+            }
+        }
+        fmt.Println(commonHashes)
+        
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:
