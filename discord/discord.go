@@ -118,6 +118,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
     } else if ( words[1] == "shaders" ) {
         var response resty.Response 
         getPartyShaders(user, &response)
+        fmt.Println(response.String())
         code := response.StatusCode()
         if ( code == 401 ) {
             s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
