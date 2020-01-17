@@ -305,8 +305,6 @@ func getPartyShaders(c *gin.Context) {
                 shaderReq.Header.Add("X-API-Key", os.Getenv("API_KEY"))
                 shaderResp, _ := client.Do(shaderReq)
 
-                fmt.Println(shaderURL)
-
                 if shaderResp.StatusCode == http.StatusOK {
                 } else {
                     c.String(shaderResp.StatusCode, "Error getting shader information")
@@ -316,8 +314,6 @@ func getPartyShaders(c *gin.Context) {
                 var shaderJSON interface{}
                 err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
                 shaderResp.Body.Close()
-
-                fmt.Println(shaderJSON)
 
                 hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
 
@@ -337,7 +333,7 @@ func getPartyShaders(c *gin.Context) {
                         shaderHashes.mux.Unlock()
                     } else {
                         shaderHashes.mux.Lock()
-                        shaderHashes.m[hash] = 0
+                        shaderHashes.m[hash] = 1
                         shaderHashes.mux.Unlock()
                     }
 
