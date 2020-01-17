@@ -3,6 +3,7 @@ package discord
 import (
     "encoding/json"
     "fmt"
+    "sort"
     "os"
     "os/signal"
     "strings"
@@ -140,13 +141,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             for _, s := range shaders {
                 shaderList = append(shaderList, s.Name)
             }
+            sort.Strings(shaderList)
 
             embed := NewEmbed().
                 SetTitle("Fireteam Shaders").
                 SetDescription("This is a list of shaders that all fireteam members have collected.").
                 AddField("Shaders", strings.Join(shaderList[:], "\n")).
                 SetColor(0x00ff00).MessageEmbed
-                
+
             s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
         }     
