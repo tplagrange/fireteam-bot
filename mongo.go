@@ -144,9 +144,9 @@ func updateShaderHashes(json interface{}) {
     for hash, data := range manifest {
         info := data.(map[string]interface{})["displayProperties"].(map[string]interface{})
         name := info["name"].(string)
-        icon := info["icon"].(string)
+        // icon := info["icon"].(string)
 
-        go updateShader(Shader{hash, name, icon})
+        go updateShader(Shader{hash, name, "-1"})
     }
 }
 
@@ -156,7 +156,7 @@ func updateShader(shader Shader) {
     update := bson.M{
         "$set": bson.M{
           "name": shader.Name,
-          "icon": shader.Icon,
+          // "icon": shader.Icon,
         },
     }
 
