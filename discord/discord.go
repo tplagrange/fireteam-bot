@@ -169,6 +169,8 @@ func getPartyShaders(user string, res *resty.Response) {
         fmt.Println(err)
     }
 
+    fmt.Println(res.String())
+
     return
 }
 
