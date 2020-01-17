@@ -228,6 +228,8 @@ func getPartyShaders(c *gin.Context) {
 
     switch returnCode := validate(discordID); returnCode {
     case 200:
+        ///////// Start Success Condition
+
         // Get the membership IDs of the party members
         client := &http.Client{}
         reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
@@ -345,11 +347,13 @@ func getPartyShaders(c *gin.Context) {
             }
         }
 
+        shaders := make([]Shader, 0)
         for _, hash := range commonHashes {
-            shader := matchCollectibleHash(hash)
-            fmt.Println(shader)
+            shaders = append(shaders, matchCollectibleHash(hash))
         }
 
+        c.JSON(200, shaders)
+        ///////// End Success Condition
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:

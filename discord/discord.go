@@ -12,7 +12,7 @@ import (
 )
 
 // Use a resty http client to make queries to the backend
-// TODO: Replace this with the built in http client
+// TODO: Replace this with the built in http client?
 var rc *resty.Client
 
 func Bot() {
@@ -116,7 +116,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             s.ChannelMessageSend(userChannel.ID, "Set loadout: " + name)
         }
     } else if ( words[1] == "shaders" ) {
-        code := getPartyShaders(user)
+        var response resty.Response 
+        getPartyShaders(user, &response)
+        code := response.StatusCode()
         if ( code == 401 ) {
             s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
         } else if ( code == 300 ) {
@@ -124,7 +126,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else if ( code != 200 ) {
             s.ChannelMessageSend(userChannel.ID, "Error getting shaders")
         } else {
-            s.ChannelMessageSend(userChannel.ID, "Got shaders")
+            s.ChannelMessageSend(userChannel.ID, response.String())
         }     
     }
 
@@ -158,7 +160,7 @@ func equipLoadout(user string, loadoutName string) int {
     return res.StatusCode()
 }
 
-func getPartyShaders(user string) int {
+func getPartyShaders(user string, res *resty.Response) {
     res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") +
             "/api/shaders/" +
             "?id=" + user)
@@ -166,7 +168,7 @@ func getPartyShaders(user string) int {
         fmt.Println(err)
     }
 
-    return res.StatusCode()
+    return
 }
 
 // Outputs the how-to
