@@ -136,9 +136,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else if ( code != 200 ) {
             s.ChannelMessageSend(userChannel.ID, "Error getting shaders")
         } else {
-            for _, shader := range shaders {
-                s.ChannelMessageSend(m.ChannelID, shader.Name)
+            shaderList := make([]string, 0)
+            for _, s := range shaders {
+                shaderList = append(shaderList, s.Name)
             }
+
+            embed := NewEmbed().
+                SetTitle("Fireteam Shaders").
+                SetDescription("This is a list of shaders that all fireteam members have collected.").
+                AddField("Shaders", strings.Join(shaderList[:], "\n")).
+                SetColor(0x00ff00).MessageEmbed
+                
+            s.ChannelMessageSendEmbed(m.ChannelID, embed)
+
         }     
     }
 
