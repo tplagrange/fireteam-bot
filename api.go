@@ -317,6 +317,8 @@ func getPartyShaders(c *gin.Context) {
                 err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
                 shaderResp.Body.Close()
 
+                fmt.Println(shaderJSON)
+
                 responseData := shaderJSON.(map[string]interface{})
                 collectibleData := responseData["Response"].(map[string]interface{})
                 dataData := collectibleData["collectibles"].(map[string]interface{})
