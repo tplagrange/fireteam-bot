@@ -321,10 +321,11 @@ func getPartyShaders(c *gin.Context) {
 
                 hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
 
-                for hash, state := range hashData {
+                for hash, value := range hashData {
                     // We will track the counts of shader hashes present using a hash
                     // If the hash value int is equal to the number of characters in the party, then everyone has the shader
-                    if state.(map[string]int)["state"] != 0 {
+                    state := value.(map[string]interface{})["state"].(int)
+                    if state != 0 {
                         continue
                     }
                     shaderHashes.mux.Lock()
