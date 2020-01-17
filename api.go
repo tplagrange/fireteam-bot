@@ -70,16 +70,18 @@ func bungieCallback(c *gin.Context) {
             fmt.Println(err)
         }
 
-        collection := db.Database(dbName).Collection("users")
+        deleteUser(state)
 
-        // Delete any existing entries for this user
-        filter := bson.D{{ "discordid", state}}
-        deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-        if err != nil {
-            fmt.Println(err)
-        } else {
-            fmt.Println(deleteResult)
-        }
+        // collection := db.Database(dbName).Collection("users")
+
+        // // Delete any existing entries for this user
+        // filter := bson.D{{ "discordid", state}}
+        // deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+        // if err != nil {
+        //     fmt.Println(err)
+        // } else {
+        //     fmt.Println(deleteResult)
+        // }
 
         // Collect the available destiny membership id(s) as an array
         req, _ = http.NewRequest("GET", "https://www.bungie.net/platform/User/GetBungieAccount/" + tokenResponse.Membership_id + "/254/", nil)
@@ -126,12 +128,7 @@ func bungieCallback(c *gin.Context) {
 
             // Insert new user entry
             newUser := User{loadouts, destinyMemberships, state, activeMembership, "-1", tokenResponse.Access_token, tokenResponse.Refresh_token}
-            insertResult, err := collection.InsertOne(context.TODO(), newUser)
-            if err != nil {
-                fmt.Println(err)
-            } else {
-                fmt.Println(insertResult.InsertedID)
-            }
+            createUser(newUser)
         } else {
             // Error in GetBungieAccount
             fmt.Println(resp.StatusCode)
@@ -380,7 +377,7 @@ func getCurrentLoadout(c *gin.Context) {
     switch returnCode := validate(discordID); returnCode {
     // Success Condition
     case 200:
-        activeCharacter := setActiveCharacter(result)
+        activeCharacter := updateActiveCharacter(result)
 
         client := &http.Client{}
         reqURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
@@ -472,7 +469,7 @@ func setLoadout(c *gin.Context) {
     // Success Condition
     case 200:
         var items []int
-        activeCharacter := setActiveCharacter(user)
+        activeCharacter := updateActiveCharacter(user)
 
         for _, l := range user.Loadouts {
             if ( l.Name == loadoutName ) {
@@ -579,34 +576,6 @@ func getActiveCharacter(mid string) string {
             activeCharacter = k
             latestDate = date
         }
-    }
-
-    return activeCharacter
-}
-
-// Sets and returns the most recently played character id
-func setActiveCharacter(user User) string {
-    // If user has no active membership, must update
-    if (user.ActiveMembership == "-1") {
-        // getActiveMembership()
-        return "-1"
-    }
-
-    activeCharacter := getActiveCharacter(user.ActiveMembership)
-
-    collection := db.Database(dbName).Collection("users")
-
-    filter := bson.M{"discordid": bson.M{"$eq": user.DiscordID}}
-    update := bson.M{"$set": bson.M{"activecharacter": activeCharacter}}
-
-    // Call the driver's UpdateOne() method and pass filter and update to it
-    _, err := collection.UpdateOne(
-        context.Background(),
-        filter,
-        update,
-    )
-    if ( err != nil ) {
-        fmt.Println(err)
     }
 
     return activeCharacter
