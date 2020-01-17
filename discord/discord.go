@@ -162,14 +162,14 @@ func equipLoadout(user string, loadoutName string) int {
 }
 
 func getPartyShaders(user string, res *resty.Response) {
-    res, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") +
+    response, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") +
             "/api/shaders/" +
             "?id=" + user)
     if err != nil {
         fmt.Println(err)
     }
 
-    fmt.Println(res.String())
+    *res = *response
 
     return
 }
