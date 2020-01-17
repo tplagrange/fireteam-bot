@@ -317,7 +317,11 @@ func getPartyShaders(c *gin.Context) {
                 err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
                 shaderResp.Body.Close()
 
-                hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
+                responseData := shaderJSON.(map[string]interface{})
+                collectibleData := responseData["Response"].(map[string]interface{})
+                dataData := collectibleData["collectibles"].(map[string]interface{})
+                innerData := dataData["data"].(map[string]interface{})
+                hashData := innerData["collectibles"].(map[string]interface{})
 
                 for hash, state := range hashData {
                     // We will track the counts of shader hashes present using a hash
