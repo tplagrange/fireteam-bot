@@ -126,12 +126,12 @@ func createUser(user User) {
 //////////////
 func findShader(hash string) (Shader, error) {
     // Find the user in the database
-    filter      := bson.D{{ "hash", hash}}
     collection  := db.Database(dbName).Collection(shaderTable)
-
+    
     var result Shader
-    err := collection.FindOne(context.TODO(), filter).Decode(&result)
+    err := collection.FindOne(context.Background(), bson.M{"_id": hash}).Decode(&result)
     if err != nil {
+        fmt.Println(err)
         return Shader{}, err
     }
 
@@ -163,7 +163,7 @@ func updateShader(shader Shader) {
         },
     }
 
-    result, err := collection.UpdateOne(
+    _, err := collection.UpdateOne(
         context.Background(),
         filter,
         update,
@@ -172,7 +172,5 @@ func updateShader(shader Shader) {
 
     if err != nil {
         fmt.Println(err)
-    } else {
-        fmt.Println(result)
     }
 }

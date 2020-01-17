@@ -344,7 +344,11 @@ func getPartyShaders(c *gin.Context) {
                 commonHashes = append(commonHashes, hash)
             }
         }
-        fmt.Println(commonHashes)
+
+        for _, hash := range commonHashes {
+            shader := matchCollectibleHash(hash)
+            fmt.Println(shader)
+        }
 
     case 300:
         c.String(300, "Please select a membership ID to continue request")

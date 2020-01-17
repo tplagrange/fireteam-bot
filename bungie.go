@@ -29,12 +29,15 @@ func getManifest() map[string]interface{} {
 }
 
 // Returns a json object containing information about the matched shader
-func matchShaderHash(hash string) string {
+func matchCollectibleHash(hash string) Shader {
 	// Check against the db to find a match for the hash
+    shader, err := findShader(hash)
 
-	// If no match is found, update the db and try again
-	// If still not match, return an error
-	return "-1"
+    if err != nil {
+        return Shader{}
+    }
+	
+	return shader
 }
 
 func getShaderHashes() {
