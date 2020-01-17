@@ -149,7 +149,7 @@ func updateShaderHashes(json interface{}) {
             icon = "-1"
         }
 
-        go updateShader(Shader{hash, name, "-1"})
+        go updateShader(Shader{hash, name, icon})
     }
 }
 
@@ -159,7 +159,7 @@ func updateShader(shader Shader) {
     update := bson.M{
         "$set": bson.M{
           "name": shader.Name,
-          // "icon": shader.Icon,
+          "icon": shader.Icon,
         },
     }
 
