@@ -300,7 +300,7 @@ func getPartyShaders(c *gin.Context) {
                           q +
                           "/Collectibles/" +
                           "2063273188/" +
-                          "/?components=800"
+                          "?components=800"
                 shaderReq, _ := http.NewRequest("GET", shaderURL, nil)
                 shaderReq.Header.Add("X-API-Key", os.Getenv("API_KEY"))
                 shaderResp, _ := client.Do(req)
@@ -352,7 +352,7 @@ func getPartyShaders(c *gin.Context) {
             }
         }
         fmt.Println(commonHashes)
-        
+
     case 300:
         c.String(300, "Please select a membership ID to continue request")
     case 401:
