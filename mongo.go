@@ -144,7 +144,10 @@ func updateShaderHashes(json interface{}) {
     for hash, data := range manifest {
         info := data.(map[string]interface{})["displayProperties"].(map[string]interface{})
         name := info["name"].(string)
-        // icon := info["icon"].(string)
+        icon, ok := info["icon"].(string)
+        if !ok {
+            icon = "-1"
+        }
 
         go updateShader(Shader{hash, name, "-1"})
     }
