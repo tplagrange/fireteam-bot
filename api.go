@@ -303,7 +303,7 @@ func getPartyShaders(c *gin.Context) {
                           "?components=800"
                 shaderReq, _ := http.NewRequest("GET", shaderURL, nil)
                 shaderReq.Header.Add("X-API-Key", os.Getenv("API_KEY"))
-                shaderResp, _ := client.Do(req)
+                shaderResp, _ := client.Do(shaderReq)
 
                 fmt.Println(shaderURL)
 
