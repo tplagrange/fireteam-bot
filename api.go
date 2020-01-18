@@ -257,16 +257,18 @@ func getPartyShaders(c *gin.Context) {
 
         profileMap, ok := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})
         if ok {
-            members := profileMap["data"].(map[string]interface{})["partyMembers"].([]interface{})
-            for _, u := range members {
-                valuesMap := u.(map[string]interface{})
-                partyMIDs = append(partyMIDs, valuesMap["membershipId"].(string))
+            members, ok  := profileMap["data"].(map[string]interface{})["partyMembers"].([]interface{})
+            if ok {
+                partyMIDs = append(partyMIDs, result.ActiveMembership)
+            } else {
+                for _, u := range members {
+                    valuesMap := u.(map[string]interface{})
+                    partyMIDs = append(partyMIDs, valuesMap["membershipId"].(string))
+                }
             }
         } else {
             partyMIDs = append(partyMIDs, result.ActiveMembership)
         }
-
-        fmt.Println(partyMIDs)
 
         // Now we need to get the active character id for every membership ID
         apiQueries := SafeSlice{s: make([]string, 0)}
@@ -283,8 +285,6 @@ func getPartyShaders(c *gin.Context) {
             }(&wg)
         }
         wg.Wait()
-
-        fmt.Println(apiQueries.s)
 
         // Now we have every character ID in the party, we need to get shader information for every character
         shaderHashes := SafeMap{m: make(map[string]int)}
