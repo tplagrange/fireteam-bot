@@ -146,8 +146,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
             if len(words) == 3 {
                 rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
-                shader := shaderList[rand.Intn(len(shaderList))]
-                s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader)
+                shader := shaders[rand.Intn(len(shaders))]
+                s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader.Name)
+                if shader.Icon != "-1" {
+                    s.ChannelMessageSend(m.ChannelID, "bungie.net" + shader.Icon)
+                }
             } else {
                 sort.Strings(shaderList)
 
