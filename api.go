@@ -256,7 +256,7 @@ func getPartyShaders(c *gin.Context) {
         partyMIDs := make([]string, 0)
 
         profileMap, ok := jsonResponse.(map[string]interface{})["Response"].(map[string]interface{})["profileTransitoryData"].(map[string]interface{})
-        if !ok {
+        if ok {
             members := profileMap["data"].(map[string]interface{})["partyMembers"].([]interface{})
             for _, u := range members {
                 valuesMap := u.(map[string]interface{})
