@@ -3,11 +3,13 @@ package discord
 import (
     "encoding/json"
     "fmt"
+    "math/rand"
     "sort"
     "os"
     "os/signal"
     "strings"
     "syscall"
+    "time"
 
     "github.com/bwmarrin/discordgo"
     "github.com/go-resty/resty/v2"
@@ -124,7 +126,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             s.ChannelMessageSend(userChannel.ID, "Set loadout: " + name)
         }
     } else if ( words[1] == "shaders" ) {
-        var response resty.Response 
+        var response resty.Response
         getPartyShaders(user, &response)
         code := response.StatusCode()
         var shaders []Shader
@@ -141,17 +143,25 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             for _, s := range shaders {
                 shaderList = append(shaderList, s.Name)
             }
-            sort.Strings(shaderList)
 
-            embed := NewEmbed().
-                SetTitle("Fireteam Shaders").
-                SetDescription("This is a list of shaders that all fireteam members have collected.").
-                AddField("Shaders", strings.Join(shaderList[:], "\n")).
-                SetColor(0x00ff00).MessageEmbed
+            if len(words) == 3 {
+                rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
+                shader := shaderList[rand.Intn(len(shaderList))]
+                s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader)
+            } else {
+                sort.Strings(shaderList)
 
-            s.ChannelMessageSendEmbed(m.ChannelID, embed)
+                embed := NewEmbed().
+                    SetTitle("Fireteam Shaders").
+                    SetDescription("This is a list of shaders that all fireteam members have collected.").
+                    AddField("Shaders", strings.Join(shaderList[:], "\n")).
+                    SetColor(0x00ff00).MessageEmbed
 
-        }     
+                s.ChannelMessageSendEmbed(m.ChannelID, embed)
+            }
+
+
+        }
     }
 
     // Debug to acknowledge the message in discord
