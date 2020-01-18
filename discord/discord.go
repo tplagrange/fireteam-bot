@@ -149,7 +149,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 shader := shaders[rand.Intn(len(shaders))]
                 s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader.Name)
                 if shader.Icon != "-1" {
-                    s.ChannelMessageSend(m.ChannelID, "bungie.net" + shader.Icon)
+                    s.ChannelMessageSend(m.ChannelID, "https://bungie.net" + shader.Icon)
                 }
             } else {
                 sort.Strings(shaderList)
