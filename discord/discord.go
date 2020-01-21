@@ -159,7 +159,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                     SetTitle("Random Shader").
                     SetDescription("🎲: Randomize\n👎: Blacklist (not implemented)").
                     AddField("Shader", "**" + shader.Name + "**").
-                    AddField("Icon", "https://bungie.net" + shader.Icon).
+                    SetImage("https://bungie.net" + shader.Icon).
                     SetColor(0x00ff00).MessageEmbed
                 msg, _ := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
