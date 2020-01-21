@@ -166,6 +166,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "🎲")
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "👎")
 
+                time.Sleep(20 * time.Second)
+
                 fmt.Println(msg.Reactions)
 
             } else {
