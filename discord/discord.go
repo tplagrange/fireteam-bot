@@ -145,12 +145,33 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             }
 
             if len(words) == 3 {
+
+                // Change this to an embed
                 rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
                 shader := shaders[rand.Intn(len(shaders))]
                 s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader.Name)
                 if shader.Icon != "-1" {
                     s.ChannelMessageSend(m.ChannelID, "https://bungie.net" + shader.Icon)
                 }
+
+                embed := NewEmbed().
+                    SetTitle("Random Shader").
+                    SetDescription("🎲: Randomize\n👎: Blacklist").
+                    AddField("Shader", shader.Name).
+                    AddField("Icon", shader.Icon).
+                    SetColor(0x00ff00).MessageEmbed
+                msg, _ := s.ChannelMessageSendEmbed(m.ChannelID, embed)
+
+                s.MessageReactionAdd(msg.ChannelID, msg.ID, "🎲")
+                s.MessageReactionAdd(msg.ChannelID, msg.ID, "👎")
+                s.MessageReactionRemove(msg.ChannelID, msg.ID, "👎", "@me")
+
+                // Loop here for response
+                // Options:
+                // 1. Roll again
+                // 2. Blacklist this shader
+                // 3. Give a cookie
+
             } else {
                 sort.Strings(shaderList)
 
