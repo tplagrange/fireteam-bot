@@ -176,7 +176,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                     fmt.Println("Timeout on reaction")
                 }
 
-                fmt.Println(msg.Reactions)
+                fmt.Println(len(msg.Reactions))
 
             } else {
                 sort.Strings(shaderList)
