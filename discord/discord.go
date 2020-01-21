@@ -162,17 +162,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "🎲")
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "👎")
 
-                timeoutChannel := make(chan bool, 1)
+                c := make(chan string, 1)
                 go func() {
-                    time.Sleep(5 * time.Minute)
-                    timeoutChannel <- false
-                }
+                    // Get the reactions
+                    time.Sleep(10 * time.Second)
+                    c <- "🎲"
+                }()
 
-                while res := <- timeoutChannel; res {
-                    time.Sleep(2 * time.Second)
-                    fmt.Println(msg.Reactions)
+                select {
+                case res := <- c:
+                    fmt.Println(res)
+                case <- time.After(5 * time.Minute):
+                    fmt.Println("Timeout on reaction")
                 }
-
 
                 fmt.Println(msg.Reactions)
 
