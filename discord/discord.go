@@ -150,10 +150,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
                 rIndex := rand.Intn(len(shaders))
                 shader := shaders[rIndex]
-                s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader.Name)
-                if shader.Icon != "-1" {
-                    s.ChannelMessageSend(m.ChannelID, "https://bungie.net" + shader.Icon)
-                }
 
                 embed := NewEmbed().
                     SetTitle("Random Shader").
@@ -166,7 +162,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "🎲")
                 s.MessageReactionAdd(msg.ChannelID, msg.ID, "👎")
 
-                time.Sleep(20 * time.Second)
+                timeoutChannel := make(chan bool, 1)
+                go func() {
+                    time.Sleep(5 * time.Minute)
+                    timeoutChannel <- false
+                }
+
+                while res := <- timeoutChannel; res {
+                    time.Sleep(2 * time.Second)
+                    fmt.Println(msg.Reactions)
+                }
+
 
                 fmt.Println(msg.Reactions)
 
