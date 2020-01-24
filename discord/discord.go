@@ -197,9 +197,9 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
             for i, reaction := range m.Reactions {
                 if reaction.Count > 1 {
                     if i == 0 {
-                        fmt.Println("Index 0")
+                        fmt.Println("Randomizing shader again")
                     } else {
-                        fmt.Println("Index 1")
+                        fmt.Println("Blacklist not implemented")
                     }
                     c <- true
                     return
@@ -217,6 +217,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
             return
         }
         newShaders := append(shaders[:rIndex], shaders[rIndex+1:]...)
+        s.ChannelMessageDelete(channelID, msg.ID)
         randomizeShader(newShaders, channelID, s)
     case <- time.After(5 * time.Minute):
         fmt.Println("Timeout on reaction")
