@@ -173,6 +173,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                             }
                         }
                         time.Sleep(1 * time.Second)
+                        m, _ = s.ChannelMessage(msg.ChannelID, msg.ID)
                     }
                 }()
 
