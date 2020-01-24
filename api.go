@@ -144,14 +144,10 @@ func bungieCallback(c *gin.Context) {
 func bungieAuth(c *gin.Context) {
     discordID := c.Query("id")
 
-    fmt.Println(discordID)
-
     bungieAuthURL := "https://www.bungie.net/en/OAuth/Authorize?client_id=" +
                      os.Getenv("CLIENT_ID") +
                      "&response_type=code" +
                      "&state=" + discordID
-
-    fmt.Println(bungieAuthURL)
 
     c.Redirect(http.StatusMovedPermanently, bungieAuthURL)
 }
@@ -293,11 +289,15 @@ func getPartyShaders(c *gin.Context) {
 
         // Now we have every character ID in the party, we need to get shader information for every character
         shaderHashes := SafeMap{m: make(map[string]int)}
+        numCharacters := len(apiQueries.s)
+
+        fmt.Println("Getting common shaders for group of " + string(numCharacters))
         for _, query := range apiQueries.s {
             wg.Add(1)
             go func(q string, wait *sync.WaitGroup) {
                 defer wait.Done()
 
+                fmt.Println("Grabbing shaders for " + q)
                 shaderURL := "https://www.bungie.net/platform/Destiny2/3/Profile/" +
                           q +
                           "/Collectibles/" +
@@ -308,47 +308,45 @@ func getPartyShaders(c *gin.Context) {
                 shaderResp, _ := client.Do(shaderReq)
 
                 if shaderResp.StatusCode == http.StatusOK {
+                    var shaderJSON interface{}
+                    err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
+                    shaderResp.Body.Close()
+
+                    hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
+
+                    for hash, value := range hashData {
+                        // We will track the counts of shader hashes present using a hash
+                        // If the hash value int is equal to the number of characters in the party, then everyone has the shader
+                        state := value.(map[string]interface{})["state"].(float64)
+                        if state != 0 {
+                            continue
+                        }
+                        shaderHashes.mux.Lock()
+                        count, ok := shaderHashes.m[hash]
+                        shaderHashes.mux.Unlock()
+                        if ok {
+                            shaderHashes.mux.Lock()
+                            shaderHashes.m[hash] = count + 1
+                            shaderHashes.mux.Unlock()
+                        } else {
+                            shaderHashes.mux.Lock()
+                            shaderHashes.m[hash] = 1
+                            shaderHashes.mux.Unlock()
+                        }
+
+                        if ( err != nil ) {
+                            fmt.Println(err)
+                        }
+                    }
                 } else {
                     c.String(shaderResp.StatusCode, "Error getting shader information")
                     return
-                }
-
-                var shaderJSON interface{}
-                err := json.NewDecoder(shaderResp.Body).Decode(&shaderJSON)
-                shaderResp.Body.Close()
-
-                hashData := shaderJSON.(map[string]interface{})["Response"].(map[string]interface{})["collectibles"].(map[string]interface{})["data"].(map[string]interface{})["collectibles"].(map[string]interface{})
-
-                for hash, value := range hashData {
-                    // We will track the counts of shader hashes present using a hash
-                    // If the hash value int is equal to the number of characters in the party, then everyone has the shader
-                    state := value.(map[string]interface{})["state"].(float64)
-                    if state != 0 {
-                        continue
-                    }
-                    shaderHashes.mux.Lock()
-                    count, ok := shaderHashes.m[hash]
-                    shaderHashes.mux.Unlock()
-                    if ok {
-                        shaderHashes.mux.Lock()
-                        shaderHashes.m[hash] = count + 1
-                        shaderHashes.mux.Unlock()
-                    } else {
-                        shaderHashes.mux.Lock()
-                        shaderHashes.m[hash] = 1
-                        shaderHashes.mux.Unlock()
-                    }
-
-                    if ( err != nil ) {
-                        fmt.Println(err)
-                    }
                 }
             }(query, &wg)
         }
         wg.Wait()
 
         commonHashes  := make([]string, 0)
-        numCharacters := len(apiQueries.s)
         for hash, count := range shaderHashes.m {
             if count == numCharacters {
                 commonHashes = append(commonHashes, hash)
@@ -513,8 +511,6 @@ func setLoadout(c *gin.Context) {
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
         req.Header.Add("Authorization", "Bearer " + user.AccessToken)
         req.Header.Add("Content-Type", "application/json")
-
-        fmt.Println(reqURL)
 
         resp, _ := client.Do(req)
 

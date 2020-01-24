@@ -101,7 +101,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         name := words[2]
         code := saveLoadout(user, name)
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
@@ -117,7 +117,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         name := words[2]
         code := equipLoadout(user, name)
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
@@ -133,7 +133,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         json.Unmarshal(response.Body(), &shaders)
 
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
