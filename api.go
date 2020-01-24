@@ -291,7 +291,7 @@ func getPartyShaders(c *gin.Context) {
         shaderHashes := SafeMap{m: make(map[string]int)}
         numCharacters := len(apiQueries.s)
 
-        fmt.Println("Getting common shaders for group of " + string(numCharacters))
+        fmt.Println("Getting common shaders for group of " + strconv.Itoa(numCharacters))
         for _, query := range apiQueries.s {
             wg.Add(1)
             go func(q string, wait *sync.WaitGroup) {
