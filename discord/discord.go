@@ -220,6 +220,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
         s.ChannelMessageDelete(channelID, msg.ID)
         randomizeShader(newShaders, channelID, s)
     case <- time.After(5 * time.Minute):
+        s.MessageReactionsRemoveAll(channelID, msg.ID)
         fmt.Println("Timeout on reaction")
     }
 }
