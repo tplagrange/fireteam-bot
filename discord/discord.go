@@ -169,6 +169,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                         for _, reaction := range m.Reactions {
                             if reaction.Count > 1 {
                                 c <- true
+                                return
                             }
                         }
                         time.Sleep(1 * time.Second)
@@ -178,8 +179,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                 select {
                 case res := <- c:
                     if res {
-                        fmt.Println("Run it again lad!")
+                        fmt.Println("Got true")
                     }
+                    fmt.Println("Run it again lad!")
                 case <- time.After(5 * time.Minute):
                     fmt.Println("Timeout on reaction")
                 }
