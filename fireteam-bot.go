@@ -26,7 +26,7 @@ func hello(c *gin.Context) {
 }
 
 func main() {
-    log, _ := golog.New()
+    log, _ := golog.New("api", 1, os.Stdout)
 
     port := os.Getenv("PORT")
 

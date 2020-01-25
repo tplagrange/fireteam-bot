@@ -28,7 +28,7 @@ var rc *resty.Client
 var log golog.Logger
 
 func Bot() {
-    log, _ := golog.New()
+    log, _ := golog.New("bot", 1, os.Stdout)
 
     token := os.Getenv("BOT_TOKEN")
 
@@ -169,11 +169,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
         }
     }
-
-    // Debug to acknowledge the message in discord
-    // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
-    // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 }
+
+// func handleCode(int code, )
+
+//     // Debug to acknowledge the message in discord
+//     // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
+//     // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
+// }
 
 func getShaders() {
 
