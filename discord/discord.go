@@ -12,7 +12,7 @@ import (
     "time"
 
     "github.com/bwmarrin/discordgo"
-    golog "github.com/apsdehal/go-logger"
+    log "github.com/sirupsen/logrus"
     "github.com/go-resty/resty/v2"
 )
 
@@ -25,11 +25,8 @@ type Shader struct {
 // Use a resty http client to make queries to the backend
 // TODO: Replace this with the built in http client?
 var rc *resty.Client
-var log golog.Logger
 
 func Bot() {
-    log, _ := golog.New("bot", 1, os.Stdout)
-
     token := os.Getenv("BOT_TOKEN")
 
     // Create a new Discord session using the provided bot token
