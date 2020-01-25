@@ -101,7 +101,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         name := words[2]
         code := saveLoadout(user, name)
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
@@ -117,7 +117,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         name := words[2]
         code := equipLoadout(user, name)
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
@@ -133,25 +133,23 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         json.Unmarshal(response.Body(), &shaders)
 
         if ( code == 401 ) {
-            s.ChannelMessageSend(userChannel.ID, "[Hello, please register](http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user +")")
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
         } else if ( code == 300 ) {
             s.ChannelMessageSend(userChannel.ID, "User must select active membership")
         } else if ( code != 200 ) {
             s.ChannelMessageSend(userChannel.ID, "Error getting shaders")
         } else {
-            shaderList := make([]string, 0)
-            for _, s := range shaders {
-                shaderList = append(shaderList, s.Name)
-            }
 
             if len(words) == 3 {
-                rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
-                shader := shaders[rand.Intn(len(shaders))]
-                s.ChannelMessageSend(m.ChannelID, "You should all equip: " + shader.Name)
-                if shader.Icon != "-1" {
-                    s.ChannelMessageSend(m.ChannelID, "https://bungie.net" + shader.Icon)
-                }
+
+                randomizeShader(shaders, m.ChannelID, s)
+
             } else {
+                shaderList := make([]string, 0)
+                for _, s := range shaders {
+                    shaderList = append(shaderList, s.Name)
+                }
+
                 sort.Strings(shaderList)
 
                 embed := NewEmbed().
@@ -170,6 +168,61 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
     // Debug to acknowledge the message in discord
     // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
     // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
+}
+
+func getShaders() {
+
+}
+
+func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
+    rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
+    rIndex := rand.Intn(len(shaders))
+    shader := shaders[rIndex]
+
+    embed := NewEmbed().
+        SetTitle("Random Shader").
+        SetDescription("🎲: Randomize\n👎: Blacklist (not implemented)").
+        AddField("Shader", "**" + shader.Name + "**").
+        SetImage("https://bungie.net" + shader.Icon).
+        SetColor(0x00ff00).MessageEmbed
+    msg, _ := s.ChannelMessageSendEmbed(channelID, embed)
+
+    s.MessageReactionAdd(channelID, msg.ID, "🎲")
+    s.MessageReactionAdd(channelID, msg.ID, "👎")
+
+    c := make(chan bool, 1)
+    go func() {
+        m, _ := s.ChannelMessage(channelID, msg.ID)
+        for {
+            for i, reaction := range m.Reactions {
+                if reaction.Count > 1 {
+                    if i == 0 {
+                        fmt.Println("Randomizing shader again")
+                    } else {
+                        fmt.Println("Blacklist not implemented")
+                    }
+                    c <- true
+                    return
+                }
+            }
+            time.Sleep(1 * time.Second)
+            m, _ = s.ChannelMessage(channelID, msg.ID)
+        }
+    }()
+
+    select {
+    case <- c:
+        if len(shaders) == 0 {
+            fmt.Println("No more shaders to randomize")
+            return
+        }
+        newShaders := append(shaders[:rIndex], shaders[rIndex+1:]...)
+        s.ChannelMessageDelete(channelID, msg.ID)
+        randomizeShader(newShaders, channelID, s)
+    case <- time.After(5 * time.Minute):
+        s.MessageReactionsRemoveAll(channelID, msg.ID)
+        fmt.Println("Timeout on reaction")
+    }
 }
 
 // Save a loadout for a user
