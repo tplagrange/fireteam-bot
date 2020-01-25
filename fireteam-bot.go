@@ -13,7 +13,7 @@ import (
 
     // External Libraries
     "github.com/gin-gonic/gin"
-    "github.com/kataras/golog"
+    golog "github.com/apsdehal/go-logger"
     "go.mongodb.org/mongo-driver/mongo"
     _ "github.com/joho/godotenv/autoload"
 )
@@ -26,12 +26,12 @@ func hello(c *gin.Context) {
 }
 
 func main() {
-    log := golog.New()
+    log, _ := golog.New()
 
     port := os.Getenv("PORT")
 
     if port == "" {
-        fmt.Print("Using default port...")
+        log.Info("Using default port...")
         port = "8080"
     }
 

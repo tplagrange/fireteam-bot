@@ -32,13 +32,13 @@ func connectClient() *mongo.Client {
     // Connect to MongoDB
     client, err := mongo.Connect(context.TODO(), clientOptions)
     if err != nil {
-        log.Error(err)
+        log.Error(err.Error())
     }
 
     // Check the connection
     err = client.Ping(context.TODO(), nil)
     if err != nil {
-        log.Error(err)
+        log.Error(err.Error())
     }
 
     // Set table names

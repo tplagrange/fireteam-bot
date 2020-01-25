@@ -12,6 +12,7 @@ import (
     "time"
 
     "github.com/bwmarrin/discordgo"
+    golog "github.com/apsdehal/go-logger"
     "github.com/go-resty/resty/v2"
 )
 
@@ -24,12 +25,15 @@ type Shader struct {
 // Use a resty http client to make queries to the backend
 // TODO: Replace this with the built in http client?
 var rc *resty.Client
+var log golog.Logger
 
 func Bot() {
+    log, _ := golog.New()
+
     token := os.Getenv("BOT_TOKEN")
 
     // Create a new Discord session using the provided bot token
-    fmt.Println("Starting Discord Bot...")
+    log.Info("Starting Discord Bot...")
     d, err := discordgo.New("Bot " + token)
     if err != nil {
         fmt.Println("Error creating Discord session: ", err)
@@ -39,7 +43,8 @@ func Bot() {
     // Open the websocket and begin listening.
     err = d.Open()
     if err != nil {
-        fmt.Println("Error opening Discord session: ", err)
+        log.Error("Error opening Discord session: " + err.Error())
+        return
     }
 
     // Instantiate the REST client
@@ -49,7 +54,7 @@ func Bot() {
     d.AddHandler(messageCreate)
 
     // Wait here until CTRL-C o other term signal is received.
-    fmt.Println("Discord Bot Running.")
+    log.Info("Discord Bot Running.")
     sc := make(chan os.Signal, 1)
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
     <-sc
@@ -213,7 +218,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
     select {
     case <- c:
         if len(shaders) == 0 {
-            fmt.Println("No more shaders to randomize")
+            log.Info("No more shaders to randomize")
             return
         }
         newShaders := append(shaders[:rIndex], shaders[rIndex+1:]...)
@@ -221,7 +226,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
         randomizeShader(newShaders, channelID, s)
     case <- time.After(5 * time.Minute):
         s.MessageReactionsRemoveAll(channelID, msg.ID)
-        fmt.Println("Timeout on reaction")
+        log.Info("Timeout on reaction")
     }
 }
 
