@@ -172,7 +172,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 // func handleCode(int code, )
-
+    
 //     // Debug to acknowledge the message in discord
 //     // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
 //     // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")

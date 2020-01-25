@@ -2,6 +2,7 @@ package main
 
 import (
     "context"
+    "log"
     "fmt"
     "os"
     "strings"
@@ -16,6 +17,8 @@ var userTable   string
 var shaderTable string
 
 func connectClient() *mongo.Client {
+    out := log.New(os.Stdout, "[bot] ", log.LstdFlags|log.Lshortfile)
+
     mongoURI := os.Getenv("MONGODB_URI")
     if mongoURI == "" {
         mongoURI = "mongodb://localhost:27017"
@@ -32,13 +35,13 @@ func connectClient() *mongo.Client {
     // Connect to MongoDB
     client, err := mongo.Connect(context.TODO(), clientOptions)
     if err != nil {
-        log.Error(err.Error())
+        out.Println(err.Error())
     }
 
     // Check the connection
     err = client.Ping(context.TODO(), nil)
     if err != nil {
-        log.Error(err.Error())
+        out.Println(err.Error())
     }
 
     // Set table names
@@ -48,7 +51,7 @@ func connectClient() *mongo.Client {
     // Update the Shader Table
     go getShaderHashes()
 
-    log.Info("Connected to db: " + dbName)
+    // log.Info("Connected to db: " + dbName)
     return client
 }
 
