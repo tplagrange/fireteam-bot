@@ -32,13 +32,13 @@ func connectClient() *mongo.Client {
     // Connect to MongoDB
     client, err := mongo.Connect(context.TODO(), clientOptions)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     // Check the connection
     err = client.Ping(context.TODO(), nil)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     // Set table names
@@ -48,7 +48,7 @@ func connectClient() *mongo.Client {
     // Update the Shader Table
     go getShaderHashes()
 
-    fmt.Println("Connected to db: " + dbName)
+    log.Info("Connected to db: " + dbName)
     return client
 }
 

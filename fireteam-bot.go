@@ -13,17 +13,21 @@ import (
 
     // External Libraries
     "github.com/gin-gonic/gin"
+    "github.com/kataras/golog"
     "go.mongodb.org/mongo-driver/mongo"
     _ "github.com/joho/godotenv/autoload"
 )
 
 var db *mongo.Client
+var log golog.Logger
 
 func hello(c *gin.Context) {
     c.String(http.StatusOK, "Hello, world!")
 }
 
 func main() {
+    log := golog.New()
+
     port := os.Getenv("PORT")
 
     if port == "" {
@@ -50,7 +54,8 @@ func main() {
     go discord.Bot()
 
     // Wait here until CTRL-C or other term signal is received.
-    fmt.Println("Server Started.")
+    log.Info("Server Started.")
+
     sc := make(chan os.Signal, 1)
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
     <-sc
@@ -60,5 +65,5 @@ func main() {
     if err != nil {
         fmt.Println(err)
     }
-    fmt.Println("Connection to MongoDB closed.")
+    log.Info("Connection to MongoDB closed.")
 }
