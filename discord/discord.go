@@ -135,7 +135,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         var names []string
         json.Unmarshal(response.Body(), &names)
 
-        log.Debug(response.Body())
+        log.Debug(code)
         log.Debug(names)
 
         if ( code == 401 ) {
