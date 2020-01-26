@@ -14,6 +14,8 @@ import (
     "sync"
     "time"
 
+    "github.com/tplagrange/fireteam-bot/log"
+
     "github.com/gin-gonic/gin"
     // "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
@@ -549,6 +551,7 @@ func getLoadouts(c *gin.Context) {
         for _, l := range user.Loadouts {
             names = append(names, l.Name)
         }
+        log.Debug(names)
         c.JSON(200, names)
     default:
         c.String(returnCode, "Could not retrieve loadouts")
