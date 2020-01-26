@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-    log "github.com/sirupsen/logrus"
+    "github.com/tplagrange/fireteam-bot/log"
 )
 
 func getManifest() map[string]interface{} {
@@ -15,14 +15,14 @@ func getManifest() map[string]interface{} {
     resp, _ := client.Do(req)
 
     if resp.StatusCode != http.StatusOK {
-            log.Warn("Error getting manifest")
+            log.Info("No manifest")
             return make(map[string]interface{})
     }
 
     var jsonResponse interface{}
     err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
     if err != nil {
-        log.Warn(err)
+        log.Error(err)
     }
     resp.Body.Close()
 
@@ -53,13 +53,13 @@ func getShaderHashes() {
     resp, _ := client.Do(req)
 
     if resp.StatusCode != http.StatusOK {
-            log.Warn("Error getting shader hash data")
+            log.Info("No shader data")
     }
 
     var jsonResponse interface{}
     err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
     if err != nil {
-        log.Warn(err)
+        log.Error(err)
     }
     resp.Body.Close()
 
