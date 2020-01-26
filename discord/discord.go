@@ -145,7 +145,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else {
             if len(names) == 0 {
                 log.Debug("No loadouts")
-                s.ChannelMessageSend(m.ID, "User currently has no saved loadouts")
+                s.ChannelMessageSend(m.ChannelID, "User currently has no saved loadouts")
             } else {
                 embed := NewEmbed().
                     SetTitle("Loadouts").
