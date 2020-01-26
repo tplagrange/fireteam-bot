@@ -116,7 +116,7 @@ func createUser(user User) {
     if err != nil {
         log.Error(err)
     } else {
-        log.Info("Created User " + insertResult.InsertedID.(string))
+        log.Info("Created User")
     }
 }
 
