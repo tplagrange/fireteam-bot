@@ -12,6 +12,7 @@ func initRoutes(router *gin.Engine) {
 
     router.GET("/api/loadout/", getCurrentLoadout)
     router.GET("/api/loadout/:name/", setLoadout)
+    router.GET("/api/loadouts/", getLoadouts)
 
     router.GET("/api/shaders/", getPartyShaders)
 }

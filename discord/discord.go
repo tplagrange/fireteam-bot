@@ -56,6 +56,7 @@ func Bot() {
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
     <-sc
 
+    log.Info("Discord Bot Shutting Down")
     // Cleanly close down the Discord session.
     d.Close()
 }
@@ -127,6 +128,32 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else {
             s.ChannelMessageSend(userChannel.ID, "Set loadout: " + name)
         }
+    } else if ( words[1] == "list" ) {
+        var response resty.Response
+        listLoadouts(user, &response)
+        code := response.StatusCode()
+        var names []string
+        json.Unmarshal(response.Body(), &names)
+
+        if ( code == 401 ) {
+            s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
+        } else if ( code == 300 ) {
+            s.ChannelMessageSend(userChannel.ID, "User must select active membership")
+        } else if ( code != 200 ) {
+            s.ChannelMessageSend(userChannel.ID, "Error getting loadouts")
+        } else {
+            if len(names) == 0 {
+                s.ChannelMessageSend(m.ID, "User currently has no saved loadouts")
+            } else {
+                embed := NewEmbed().
+                    SetTitle("Loadouts").
+                    SetDescription("Equip these loadouts using ```-fb load $name```").
+                    AddField("Names", strings.Join(names[:], "\n")).
+                    SetColor(0x00ff00).MessageEmbed
+
+                s.ChannelMessageSendEmbed(m.ChannelID, embed)
+            }
+        }
     } else if ( words[1] == "shaders" ) {
         var response resty.Response
         getPartyShaders(user, &response)
@@ -143,15 +170,10 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         } else {
 
             if len(words) == 3 {
-
-                randomizeShader(shaders, m.ChannelID, s)
-
-            } else {
                 shaderList := make([]string, 0)
                 for _, s := range shaders {
                     shaderList = append(shaderList, s.Name)
                 }
-
                 sort.Strings(shaderList)
 
                 embed := NewEmbed().
@@ -161,6 +183,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                     SetColor(0x00ff00).MessageEmbed
 
                 s.ChannelMessageSendEmbed(m.ChannelID, embed)
+            } else {
+                randomizeShader(shaders, m.ChannelID, s)
             }
 
 
@@ -249,6 +273,18 @@ func equipLoadout(user string, loadoutName string) int {
     }
 
     return res.StatusCode()
+}
+
+func listLoadouts(user string, res *resty.Response) {
+    response, err := rc.R().EnableTrace().Get("http://localhost:" + os.Getenv("PORT") + "/api/loadouts/" +
+                "?id=" + user)
+    if err != nil {
+       log.Error(err)
+    }
+
+    *res = *response
+
+    return
 }
 
 func getPartyShaders(user string, res *resty.Response) {

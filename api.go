@@ -72,17 +72,6 @@ func bungieCallback(c *gin.Context) {
 
         deleteUser(state)
 
-        // collection := db.Database(dbName).Collection("users")
-
-        // // Delete any existing entries for this user
-        // filter := bson.D{{ "discordid", state}}
-        // deleteResult, err := collection.DeleteOne(context.TODO(), filter)
-        // if err != nil {
-        //     fmt.Println(err)
-        // } else {
-        //     fmt.Println(deleteResult)
-        // }
-
         // Collect the available destiny membership id(s) as an array
         req, _ = http.NewRequest("GET", "https://www.bungie.net/platform/User/GetBungieAccount/" + tokenResponse.Membership_id + "/254/", nil)
         req.Header.Add("X-API-Key", os.Getenv("API_KEY"))
@@ -107,15 +96,15 @@ func bungieCallback(c *gin.Context) {
 
 
                 //////
-                ///
-                /// For now, we assume PC is the active membership
+                ////
+                //// For now, we assume PC is the active membership
                 activeMembershipType := valuesMap["membershipType"].(float64)
                 if ( activeMembershipType == 3 ) {
                     activeMembership = valuesMap["membershipId"].(string)
                     fmt.Println( "Active Membership: " + valuesMap["displayName"].(string) )
                 }
-                // Replace with getActiveMembership() implementation
-                ///
+                //// Replace with getActiveMembership() implementation
+                ////
                 //////
 
 
@@ -537,6 +526,32 @@ func setLoadout(c *gin.Context) {
         }
     default:
         c.String(500, "Error setting loadout")
+    }
+}
+
+func getLoadouts(c *gin.Context) {
+    discordID   := c.Query("id")
+
+    filter      := bson.D{{ "discordid", discordID}}
+    collection  := db.Database(dbName).Collection("users")
+
+    var user User
+    err := collection.FindOne(context.TODO(), filter).Decode(&user)
+    if err != nil {
+        fmt.Println(err)
+
+    }
+
+    switch returnCode := validate(discordID); returnCode {
+    // Success Condition
+    case 200:
+        names := make([]string, 0)
+        for _, l := range user.Loadouts {
+            names = append(names, l.Name)
+        }
+        c.JSON(200, names)
+    default:
+        c.String(returnCode, "Could not retrieve loadouts")
     }
 }
 
