@@ -135,8 +135,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         var names []string
         json.Unmarshal(response.Body(), &names)
 
-        log.Debug(code)
-        log.Debug(names)
 
         if ( code == 401 ) {
             s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
@@ -146,6 +144,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
             s.ChannelMessageSend(userChannel.ID, "Error getting loadouts")
         } else {
             if len(names) == 0 {
+                log.Debug("No loadouts")
                 s.ChannelMessageSend(m.ID, "User currently has no saved loadouts")
             } else {
                 embed := NewEmbed().
@@ -154,6 +153,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
                     AddField("Names", strings.Join(names[:], "\n")).
                     SetColor(0x00ff00).MessageEmbed
 
+                log.Debug("Loadouts")
                 s.ChannelMessageSendEmbed(m.ChannelID, embed)
             }
         }
