@@ -112,7 +112,7 @@ func updateActiveCharacter(user User) string {
 
 func createUser(user User) {
     collection := db.Database(dbName).Collection(userTable)
-    insertResult, err := collection.InsertOne(context.TODO(), user)
+    _, err := collection.InsertOne(context.TODO(), user)
     if err != nil {
         log.Error(err)
     } else {
