@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
-func Debug(m string) {
-	fmt.Println("[DEBUG] " + m)
+func Debug(m interface{}) {
+	fmt.Print("[DEBUG] ")
+	fmt.Print(m)
+	fmt.Print("\n")
 }
 
 func Error(e error) {
