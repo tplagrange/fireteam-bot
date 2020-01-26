@@ -136,6 +136,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
         json.Unmarshal(response.Body(), &names)
 
         log.Debug(response.Body())
+        log.Debug(names)
 
         if ( code == 401 ) {
             s.ChannelMessageSend(userChannel.ID, "Hello, please register: http://" + os.Getenv("HOSTNAME") + "/api/bungie/auth/?id=" + user)
