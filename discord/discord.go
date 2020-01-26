@@ -11,8 +11,9 @@ import (
     "syscall"
     "time"
 
+    "github.com/tplagrange/fireteam-bot/log"
+
     "github.com/bwmarrin/discordgo"
-    log "github.com/sirupsen/logrus"
     "github.com/go-resty/resty/v2"
 )
 
@@ -33,14 +34,14 @@ func Bot() {
     log.Info("Starting Discord Bot...")
     d, err := discordgo.New("Bot " + token)
     if err != nil {
-        fmt.Println("Error creating Discord session: ", err)
+        log.Error(err)
 		return
     }
 
     // Open the websocket and begin listening.
     err = d.Open()
     if err != nil {
-        log.Error("Error opening Discord session: " + err.Error())
+        log.Error(err)
         return
     }
 
@@ -174,10 +175,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 //     // s.MessageReactionAdd(m.ChannelID,m.ID, "👍")
 //     // s.ChannelMessageSend(m.ChannelID, "Here's your loadout")
 // }
-
-func getShaders() {
-
-}
 
 func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
     rand.Seed(time.Now().Unix()) // initialize global pseudo random generator

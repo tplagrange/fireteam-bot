@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
 	"net/http"
 	"os"
+
+    log "github.com/sirupsen/logrus"
 )
 
 func getManifest() map[string]interface{} {
@@ -14,14 +15,14 @@ func getManifest() map[string]interface{} {
     resp, _ := client.Do(req)
 
     if resp.StatusCode != http.StatusOK {
-            fmt.Println("Error getting manifest")
+            log.Warn("Error getting manifest")
             return make(map[string]interface{})
     }
 
     var jsonResponse interface{}
     err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
     if err != nil {
-        fmt.Println(err)
+        log.Warn(err)
     }
     resp.Body.Close()
 
@@ -52,13 +53,13 @@ func getShaderHashes() {
     resp, _ := client.Do(req)
 
     if resp.StatusCode != http.StatusOK {
-            fmt.Println("Error getting shader hash data")
+            log.Warn("Error getting shader hash data")
     }
 
     var jsonResponse interface{}
     err := json.NewDecoder(resp.Body).Decode(&jsonResponse)
     if err != nil {
-        fmt.Println(err)
+        log.Warn(err)
     }
     resp.Body.Close()
 

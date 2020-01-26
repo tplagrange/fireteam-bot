@@ -9,9 +9,9 @@ import (
 
     // Internal Libraries
     "github.com/tplagrange/fireteam-bot/discord"
+    "github.com/tplagrange/fireteam-bot/log"
 
     // External Libraries
-    log "github.com/sirupsen/logrus"
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/mongo"
     _ "github.com/joho/godotenv/autoload"
@@ -27,7 +27,7 @@ func main() {
     port := os.Getenv("PORT")
 
     if port == "" {
-        log.Println("Using default port...")
+        log.Info("Using default port...")
         port = "8080"
     }
 
@@ -50,7 +50,7 @@ func main() {
     go discord.Bot()
 
     // Wait here until CTRL-C or other term signal is received.
-    log.Println("Server Started.")
+    log.Info("Server Started.")
 
     sc := make(chan os.Signal, 1)
     signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -59,7 +59,7 @@ func main() {
     // Cleanly close down the Discord session.
     err := db.Disconnect(context.TODO())
     if err != nil {
-        log.Info(err)
+        log.Error(err)
     } else  {
         log.Info("Connection to MongoDB closed.")
     }
