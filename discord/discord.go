@@ -2,7 +2,6 @@ package discord
 
 import (
     "encoding/json"
-    "fmt"
     "math/rand"
     "sort"
     "os"
@@ -83,13 +82,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
     userChannel, err := s.UserChannelCreate(user)
     if ( err != nil ) {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     // Output help if not enough input
     if ( len(words) <= 1 ) {
         if err != nil {
-            fmt.Println(err)
+            log.Error(err)
         }
         s.ChannelMessageSend(userChannel.ID, help())
         return
@@ -199,9 +198,9 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
             for i, reaction := range m.Reactions {
                 if reaction.Count > 1 {
                     if i == 0 {
-                        fmt.Println("Randomizing shader again")
+                        log.Debug("Randomizing shader again")
                     } else {
-                        fmt.Println("Blacklist not implemented")
+                        log.Debug("Blacklist not implemented")
                     }
                     c <- true
                     return
@@ -223,7 +222,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
         randomizeShader(newShaders, channelID, s)
     case <- time.After(5 * time.Minute):
         s.MessageReactionsRemoveAll(channelID, msg.ID)
-        log.Info("Timeout on reaction")
+        log.Debug("Timeout on reaction")
     }
 }
 
@@ -234,7 +233,7 @@ func saveLoadout(user string, loadoutName string) int {
                 "?id=" + user +
                 "&name=" + loadoutName)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     return res.StatusCode()
@@ -246,7 +245,7 @@ func equipLoadout(user string, loadoutName string) int {
                 loadoutName + "/" +
                 "?id=" + user)
     if err != nil {
-        fmt.Println(err)
+       log.Error(err)
     }
 
     return res.StatusCode()
@@ -257,7 +256,7 @@ func getPartyShaders(user string, res *resty.Response) {
             "/api/shaders/" +
             "?id=" + user)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     *res = *response

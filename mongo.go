@@ -2,7 +2,6 @@ package main
 
 import (
     "context"
-    "fmt"
     "os"
     "strings"
 
@@ -66,7 +65,7 @@ func findUser(id string) User {
     var result User
     err := collection.FindOne(context.TODO(), filter).Decode(&result)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     return result
@@ -77,11 +76,9 @@ func deleteUser(id string) {
 
     // Delete any existing entries for this user
     filter := bson.D{{ "discordid", id}}
-    deleteResult, err := collection.DeleteOne(context.TODO(), filter)
+    _, err := collection.DeleteOne(context.TODO(), filter)
     if err != nil {
-        fmt.Println(err)
-    } else {
-        fmt.Println(deleteResult)
+        log.Error(err)
     }
 }
 
@@ -107,7 +104,7 @@ func updateActiveCharacter(user User) string {
         update,
     )
     if ( err != nil ) {
-        fmt.Println(err)
+        log.Error(err)
     }
 
     return activeCharacter
@@ -117,9 +114,9 @@ func createUser(user User) {
     collection := db.Database(dbName).Collection(userTable)
     insertResult, err := collection.InsertOne(context.TODO(), user)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     } else {
-        fmt.Println(insertResult.InsertedID)
+        log.Info("Created User " + insertResult.InsertedID.(string))
     }
 }
 
@@ -133,7 +130,7 @@ func findShader(hash string) (Shader, error) {
     var result Shader
     err := collection.FindOne(context.Background(), bson.M{"_id": hash}).Decode(&result)
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
         return Shader{}, err
     }
 
@@ -173,6 +170,6 @@ func updateShader(shader Shader) {
     )
 
     if err != nil {
-        fmt.Println(err)
+        log.Error(err)
     }
 }
