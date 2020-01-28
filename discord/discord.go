@@ -1,8 +1,6 @@
 package discord
 
-import (
-    "fmt"	
-	
+import (	
     "encoding/json"
     "math/rand"
     "sort"
