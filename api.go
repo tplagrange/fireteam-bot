@@ -277,6 +277,7 @@ func getPartyShaders(c *gin.Context) {
                 cid := getActiveCharacter(u)
                 apiQueries.mux.Lock()
                 apiQueries.s = append(apiQueries.s, u + "/Character/" + cid)
+                fmt.Println(u + " " + cid)
                 apiQueries.mux.Unlock()
             }(&wg)
         }
