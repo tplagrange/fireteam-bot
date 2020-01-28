@@ -1,6 +1,8 @@
 package discord
 
 import (
+    "fmt"	
+	
     "encoding/json"
     "math/rand"
     "sort"
@@ -209,7 +211,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
 
     embed := NewEmbed().
         SetTitle("Random Shader").
-        SetDescription("🎲: Randomize\n👎: Blacklist (not implemented)").
+	SetDescription("🎲: Randomize " + len(shaders) + "\n👎: Blacklist (not implemented)").
         AddField("Shader", "**" + shader.Name + "**").
         SetImage("https://bungie.net" + shader.Icon).
         SetColor(0x00ff00).MessageEmbed
@@ -225,7 +227,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
             for i, reaction := range m.Reactions {
                 if reaction.Count > 1 {
                     if i == 0 {
-			log.Debug("Randomizing " + len(shaders) + " shaders")
+			log.Debug("Randomizing shaders")
                     } else {
                         log.Debug("Blacklist not implemented")
                     }
