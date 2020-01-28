@@ -277,6 +277,8 @@ func getPartyShaders(c *gin.Context) {
             }(&wg)
         }
         wg.Wait()
+        
+        fmt.Println(apiQueries.s)
 
         // Now we have every character ID in the party, we need to get shader information for every character
         shaderHashes := SafeMap{m: make(map[string]int)}
