@@ -8,6 +8,7 @@ import (
     "sort"
     "os"
     "os/signal"
+    "strconv"
     "strings"
     "syscall"
     "time"
@@ -211,7 +212,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
 
     embed := NewEmbed().
         SetTitle("Random Shader").
-	SetDescription("🎲: Randomize " + len(shaders) + "\n👎: Blacklist (not implemented)").
+	SetDescription("🎲: Randomize (" + strconv.Itoa(len(shaders)) + ")\n👎: Blacklist (not implemented)").
         AddField("Shader", "**" + shader.Name + "**").
         SetImage("https://bungie.net" + shader.Icon).
         SetColor(0x00ff00).MessageEmbed
