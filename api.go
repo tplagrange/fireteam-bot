@@ -269,26 +269,21 @@ func getPartyShaders(c *gin.Context) {
         // Now we need to get the active character id for every membership ID
         apiQueries := SafeSlice{s: make([]string, 0)}
 
-        var wg sync.WaitGroup
         for _, u := range partyMIDs {
-            wg.Add(1)
-            go func(wait *sync.WaitGroup) {
-                defer wait.Done()
-                cid := getActiveCharacter(u)
-                apiQueries.mux.Lock()
-                apiQueries.s = append(apiQueries.s, u + "/Character/" + cid)
-                fmt.Println(u + " " + cid)
-                apiQueries.mux.Unlock()
-            }(&wg)
+            cid := getActiveCharacter(u)
+            apiQueries.mux.Lock()
+            apiQueries.s = append(apiQueries.s, u + "/Character/" + cid)
+            fmt.Println(u + " " + cid)
+            apiQueries.mux.Unlock()
         }
-        wg.Wait()
         
         fmt.Println(apiQueries.s)
 
         // Now we have every character ID in the party, we need to get shader information for every character
         shaderHashes := SafeMap{m: make(map[string]int)}
         numCharacters := len(apiQueries.s)
-
+ 
+        var wg sync.WaitGroup
         fmt.Println("Getting common shaders for group of " + strconv.Itoa(numCharacters))
         for _, query := range apiQueries.s {
             wg.Add(1)
