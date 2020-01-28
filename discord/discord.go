@@ -225,7 +225,7 @@ func randomizeShader(shaders []Shader, channelID string, s *discordgo.Session) {
             for i, reaction := range m.Reactions {
                 if reaction.Count > 1 {
                     if i == 0 {
-                        log.Debug("Randomizing shader again")
+			log.Debug("Randomizing " + len(shaders) + " shaders")
                     } else {
                         log.Debug("Blacklist not implemented")
                     }
