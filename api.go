@@ -253,6 +253,7 @@ func getPartyShaders(c *gin.Context) {
                     partyMIDs = append(partyMIDs, result.ActiveMembership)
                 } else {
                     for _, u := range members {
+                        fmt.Println("we're in here")
                         valuesMap := u.(map[string]interface{})
                         partyMIDs = append(partyMIDs, valuesMap["membershipId"].(string))
                     }
@@ -260,7 +261,10 @@ func getPartyShaders(c *gin.Context) {
             }
         } else {
             partyMIDs = append(partyMIDs, result.ActiveMembership)
+            fmt.Println("No active fireteam, using own shaders")
         }
+        
+        fmt.Println(partyMIDs)
 
         // Now we need to get the active character id for every membership ID
         apiQueries := SafeSlice{s: make([]string, 0)}
