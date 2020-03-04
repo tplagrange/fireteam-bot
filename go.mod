@@ -16,7 +16,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.2.1
+	go.mongodb.org/mongo-driver v1.3.1
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/tools v0.0.0-20200117173607-7ad9cd8f3189 // indirect
