@@ -7,7 +7,7 @@ require (
 	github.com/apsdehal/go-logger v0.0.0-20190515212710-b0d6ccfee0e6
 	github.com/bwmarrin/discordgo v0.20.2
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-resty/resty/v2 v2.1.0
+	github.com/go-resty/resty/v2 v2.3.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/joho/godotenv v1.3.0
